@@ -69,7 +69,9 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         
         tickets_data = validated_data.pop('tickets')
         event_id = validated_data.pop('event_id')
-        user = self.context['request'].user
+        
+        # Get user from context (passed by view via serializer.save(user=user))
+        user = validated_data.pop('user', None)
         
         event = Event.objects.get(id=event_id)
         
@@ -88,9 +90,9 @@ class BookingCreateSerializer(serializers.ModelSerializer):
                 )
             total_amount += tier.price
         
-        # Create booking
+        # Create booking - user may be None for guest checkout
         booking = Booking.objects.create(
-            user=user,
+            user=user,  # Set user here, can be None for guests
             event=event,
             total_amount=total_amount,
             ticket_count=ticket_count,

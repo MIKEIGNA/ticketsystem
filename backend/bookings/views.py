@@ -2,6 +2,8 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponse, FileResponse
+from django.utils import timezone
 
 from .models import Booking, Ticket
 from .serializers import (
@@ -10,11 +12,18 @@ from .serializers import (
     BookingCreateSerializer,
     TicketSerializer
 )
+from .ticket_generator import generate_ticket_pdf
 
 
 class BookingListView(generics.ListCreateAPIView):
-    """ListCreateAPIView: List user's bookings or create new"""
-    permission_classes = [permissions.IsAuthenticated]
+    """ListCreateAPIView: List user's bookings or create new (supports guest checkout)"""
+    
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            # Allow anyone to create a booking (guest checkout)
+            return [permissions.AllowAny()]
+        # Require authentication to list bookings
+        return [permissions.IsAuthenticated()]
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -22,10 +31,14 @@ class BookingListView(generics.ListCreateAPIView):
         return BookingListSerializer
 
     def get_queryset(self):
-        return Booking.objects.filter(user=self.request.user).select_related('event')
+        if self.request.user.is_authenticated:
+            return Booking.objects.filter(user=self.request.user).select_related('event')
+        return Booking.objects.none()
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        # Set user if authenticated, otherwise None (guest checkout)
+        user = self.request.user if self.request.user.is_authenticated else None
+        serializer.save(user=user)
 
 
 class BookingDetailView(generics.RetrieveAPIView):
@@ -123,4 +136,39 @@ class ValidateTicketView(APIView):
             'checked_in': ticket.checked_in,
             'checked_in_at': ticket.checked_in_at
         })
+
+
+class TicketDownloadView(APIView):
+    """APIView for downloading ticket as PDF"""
+    
+    def get(self, request, ticket_number):
+        """Download ticket PDF - accessible by ticket owner or anyone with the link (guest tickets)"""
+        ticket = get_object_or_404(Ticket, ticket_number=ticket_number)
+        
+        # Allow download if:
+        # 1. User is authenticated and owns the booking
+        # 2. Guest checkout (no user) - anyone with the ticket number can download
+        if (request.user.is_authenticated and 
+            ticket.booking.user and 
+            request.user != ticket.booking.user and
+            not request.user.is_staff):
+            return Response(
+                {'error': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Generate PDF
+        try:
+            pdf = generate_ticket_pdf(ticket)
+            
+            # Create response with PDF
+            response = HttpResponse(pdf, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="ticket_{ticket_number}.pdf"'
+            return response
+            
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to generate ticket PDF: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 

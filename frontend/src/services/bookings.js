@@ -9,4 +9,10 @@ export const bookingService = {
   // Tickets
   getMyTickets: () => api.get('/bookings/tickets/my-tickets/'),
   getTicket: (ticketNumber) => api.get(`/bookings/tickets/${ticketNumber}/`),
+  
+  // Download ticket PDF
+  downloadTicket: (ticketNumber) => api.get(
+    `/bookings/tickets/${ticketNumber}/download/`,
+    { responseType: 'blob' }  // Important for binary PDF data
+  ),
 };

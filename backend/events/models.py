@@ -84,6 +84,7 @@ class Event(models.Model):
     dress_code = models.CharField(max_length=100, blank=True)
     featured = models.BooleanField(default=False, help_text="Featured on homepage")
     tags = models.JSONField(default=list, blank=True)
+    match_data = models.JSONField(default=dict, blank=True, help_text="Sports match data including team logos")
     
     # Status and visibility
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')

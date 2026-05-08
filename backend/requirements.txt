@@ -15,3 +15,4 @@ gunicorn>=23.0
 dj-database-url>=2.2
 python-dotenv>=1.0
 django-extensions>=3.2
+xhtml2pdf>=0.2.11

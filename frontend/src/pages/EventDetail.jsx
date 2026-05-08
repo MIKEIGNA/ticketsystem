@@ -173,12 +173,115 @@ const EventDetail = () => {
               </div>
             </div>
 
+            {/* Match Info - Only for sports events with match_data */}
+            {event.match_data?.home_team && event.match_data?.away_team && (
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Match Info</h2>
+                <div className="flex items-center justify-center gap-4 py-4">
+                  {/* Home Team */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden mb-2">
+                      {event.match_data.home_team_logo ? (
+                        <img
+                          src={event.match_data.home_team_logo}
+                          alt={event.match_data.home_team}
+                          className="w-16 h-16 object-contain"
+                        />
+                      ) : (
+                        <div className="text-2xl font-bold text-gray-400">
+                          {event.match_data.home_team.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <p className="font-semibold text-gray-900 text-center">{event.match_data.home_team}</p>
+                    <p className="text-sm text-gray-500">Home</p>
+                  </div>
+
+                  {/* VS */}
+                  <div className="flex flex-col items-center px-4">
+                    <div className="text-2xl font-bold text-gray-400">VS</div>
+                    <p className="text-sm text-gray-500 mt-1">{event.match_data.category} Category</p>
+                  </div>
+
+                  {/* Away Team */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden mb-2">
+                      {event.match_data.away_team_logo ? (
+                        <img
+                          src={event.match_data.away_team_logo}
+                          alt={event.match_data.away_team}
+                          className="w-16 h-16 object-contain"
+                        />
+                      ) : (
+                        <div className="text-2xl font-bold text-gray-400">
+                          {event.match_data.away_team.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <p className="font-semibold text-gray-900 text-center">{event.match_data.away_team}</p>
+                    <p className="text-sm text-gray-500">Away</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Description */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <h2 className="text-xl font-bold text-gray-900 mb-4">About This Event</h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                {event.description}
-              </p>
+              <div 
+                className="event-description text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: event.description }}
+                style={{
+                  '& h2': { fontSize: '1.5rem', fontWeight: '700', color: '#111827', marginBottom: '0.75rem', marginTop: '1rem' },
+                  '& h3': { fontSize: '1.125rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem', marginTop: '1rem' },
+                  '& p': { marginBottom: '0.75rem', lineHeight: '1.625' },
+                  '& ul': { listStyleType: 'disc', paddingLeft: '1.25rem', marginBottom: '0.75rem' },
+                  '& li': { marginBottom: '0.25rem' },
+                  '& strong': { fontWeight: '600', color: '#111827' },
+                  '& em': { fontStyle: 'italic', color: '#6B7280' },
+                }}
+              />
+              {/* Custom CSS for event description HTML */}
+              <style>{`
+                .event-description h2 {
+                  font-size: 1.25rem;
+                  font-weight: 700;
+                  color: #111827;
+                  margin-bottom: 0.75rem;
+                  margin-top: 1rem;
+                }
+                .event-description h2:first-child {
+                  margin-top: 0;
+                }
+                .event-description h3 {
+                  font-size: 1.125rem;
+                  font-weight: 600;
+                  color: #374151;
+                  margin-bottom: 0.5rem;
+                  margin-top: 1rem;
+                }
+                .event-description p {
+                  margin-bottom: 0.75rem;
+                  line-height: 1.625;
+                }
+                .event-description ul {
+                  list-style-type: disc;
+                  padding-left: 1.5rem;
+                  margin-bottom: 0.75rem;
+                }
+                .event-description li {
+                  margin-bottom: 0.375rem;
+                }
+                .event-description strong {
+                  font-weight: 600;
+                  color: #111827;
+                }
+                .event-description em {
+                  font-style: italic;
+                  color: #6B7280;
+                  font-size: 0.875rem;
+                }
+              `}</style>
             </div>
 
             {/* Tags */}

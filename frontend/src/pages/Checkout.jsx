@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { paymentService } from '../services/payments';
 import { bookingService } from '../services/bookings';
 import { useAuth } from '../context/AuthContext';
-import { Calendar, MapPin, Ticket, CreditCard, Phone, Loader, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, Ticket, CreditCard, Phone, Loader, CheckCircle, AlertCircle, Download } from 'lucide-react';
 
 const Checkout = () => {
   const location = useLocation();
@@ -23,6 +23,17 @@ const Checkout = () => {
   const [payment, setPayment] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [downloadingTickets, setDownloadingTickets] = useState({});
+  
+  // Individual ticket details - one entry per ticket
+  const [ticketDetails, setTicketDetails] = useState(
+    Array(quantity).fill(null).map((_, i) => ({
+      ticket_index: i + 1,
+      attendee_name: user?.first_name + ' ' + user?.last_name || '',
+      attendee_email: user?.email || '',
+      attendee_phone: user?.phone_number || '',
+    }))
+  );
 
   // Redirect if no event data
   if (!event || !tier) {
@@ -36,12 +47,25 @@ const Checkout = () => {
     setError('');
 
     try {
-      const tickets = Array(quantity).fill({
-        ticket_tier_id: tier.id,
-        attendee_name: bookingData.contact_name,
-        attendee_email: bookingData.contact_email,
-        attendee_phone: bookingData.contact_phone,
-      });
+      // Create tickets array with individual details for each ticket
+      let tickets;
+      if (quantity === 1) {
+        // Single ticket - use primary contact info
+        tickets = [{
+          ticket_tier_id: tier.id,
+          attendee_name: bookingData.contact_name,
+          attendee_email: bookingData.contact_email,
+          attendee_phone: bookingData.contact_phone,
+        }];
+      } else {
+        // Multiple tickets - use individual details
+        tickets = ticketDetails.map((detail) => ({
+          ticket_tier_id: tier.id,
+          attendee_name: detail.attendee_name,
+          attendee_email: detail.attendee_email,
+          attendee_phone: detail.attendee_phone,
+        }));
+      }
 
       const response = await bookingService.createBooking({
         event_id: event.id,
@@ -56,6 +80,25 @@ const Checkout = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateTicketDetail = (index, field, value) => {
+    setTicketDetails(prev => 
+      prev.map((ticket, i) => 
+        i === index ? { ...ticket, [field]: value } : ticket
+      )
+    );
+  };
+
+  const copyContactToAll = () => {
+    setTicketDetails(prev =>
+      prev.map(ticket => ({
+        ...ticket,
+        attendee_name: bookingData.contact_name,
+        attendee_email: bookingData.contact_email,
+        attendee_phone: bookingData.contact_phone,
+      }))
+    );
   };
 
   const handlePayment = async () => {
@@ -114,6 +157,31 @@ const Checkout = () => {
     });
   };
 
+  const handleDownloadTicket = async (ticketNumber) => {
+    setDownloadingTickets(prev => ({ ...prev, [ticketNumber]: true }));
+    try {
+      const response = await bookingService.downloadTicket(ticketNumber);
+      
+      // Create a blob from the PDF data
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link to download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `ticket_${ticketNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download ticket:', error);
+      alert('Failed to download ticket. Please try again.');
+    } finally {
+      setDownloadingTickets(prev => ({ ...prev, [ticketNumber]: false }));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -128,7 +196,12 @@ const Checkout = () => {
           <div className="md:col-span-2">
             {step === 'details' && (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Contact Information</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Contact Information</h2>
+                <p className="text-gray-600 text-sm mb-6">
+                  {quantity > 1 
+                    ? `You're booking ${quantity} tickets. Enter details for each attendee below.`
+                    : "Enter your contact details for the booking."}
+                </p>
 
                 {error && (
                   <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
@@ -137,57 +210,129 @@ const Checkout = () => {
                 )}
 
                 <div className="space-y-5">
-                  <div>
-                    <label className="label">Full Name *</label>
-                    <input
-                      type="text"
-                      value={bookingData.contact_name}
-                      onChange={(e) => setBookingData({ ...bookingData, contact_name: e.target.value })}
-                      className="input"
-                      required
-                    />
+                  {/* Primary Contact Info */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-gray-900 mb-4">Primary Contact (Booking Owner)</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="label">Full Name *</label>
+                        <input
+                          type="text"
+                          value={bookingData.contact_name}
+                          onChange={(e) => setBookingData({ ...bookingData, contact_name: e.target.value })}
+                          className="input"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Email *</label>
+                        <input
+                          type="email"
+                          value={bookingData.contact_email}
+                          onChange={(e) => setBookingData({ ...bookingData, contact_email: e.target.value })}
+                          className="input"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Phone Number *</label>
+                        <input
+                          type="tel"
+                          value={bookingData.contact_phone}
+                          onChange={(e) => setBookingData({ ...bookingData, contact_phone: e.target.value })}
+                          className="input"
+                          placeholder="254XXXXXXXXX"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Special Requests (Optional)</label>
+                        <textarea
+                          value={bookingData.special_requests}
+                          onChange={(e) => setBookingData({ ...bookingData, special_requests: e.target.value })}
+                          className="input h-10 resize-none"
+                          placeholder="Any special requirements..."
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="label">Email *</label>
-                    <input
-                      type="email"
-                      value={bookingData.contact_email}
-                      onChange={(e) => setBookingData({ ...bookingData, contact_email: e.target.value })}
-                      className="input"
-                      required
-                    />
-                  </div>
+                  {/* Individual Ticket Details */}
+                  {quantity > 1 && (
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-gray-900">Ticket Details ({quantity} tickets)</h3>
+                        <button
+                          type="button"
+                          onClick={copyContactToAll}
+                          className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                        >
+                          Copy primary contact to all
+                        </button>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {ticketDetails.map((ticket, index) => (
+                          <div key={index} className="border border-gray-200 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Ticket className="w-4 h-4 text-primary-600" />
+                              <h4 className="font-medium text-gray-900">Ticket #{index + 1}</h4>
+                              <span className="text-xs text-gray-500">({tier.name})</span>
+                            </div>
+                            <div className="grid md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="label text-xs">Attendee Name *</label>
+                                <input
+                                  type="text"
+                                  value={ticket.attendee_name}
+                                  onChange={(e) => updateTicketDetail(index, 'attendee_name', e.target.value)}
+                                  className="input text-sm"
+                                  placeholder="Full name"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="label text-xs">Attendee Email *</label>
+                                <input
+                                  type="email"
+                                  value={ticket.attendee_email}
+                                  onChange={(e) => updateTicketDetail(index, 'attendee_email', e.target.value)}
+                                  className="input text-sm"
+                                  placeholder="email@example.com"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="label text-xs">Attendee Phone *</label>
+                                <input
+                                  type="tel"
+                                  value={ticket.attendee_phone}
+                                  onChange={(e) => updateTicketDetail(index, 'attendee_phone', e.target.value)}
+                                  className="input text-sm"
+                                  placeholder="254XXXXXXXXX"
+                                  required
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                  <div>
-                    <label className="label">Phone Number *</label>
-                    <input
-                      type="tel"
-                      value={bookingData.contact_phone}
-                      onChange={(e) => setBookingData({ ...bookingData, contact_phone: e.target.value })}
-                      className="input"
-                      placeholder="254XXXXXXXXX"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Format: 254XXXXXXXXX</p>
-                  </div>
-
-                  <div>
-                    <label className="label">Special Requests (Optional)</label>
-                    <textarea
-                      value={bookingData.special_requests}
-                      onChange={(e) => setBookingData({ ...bookingData, special_requests: e.target.value })}
-                      className="input h-24 resize-none"
-                      placeholder="Any special requirements..."
-                    />
-                  </div>
+                  {/* Single Ticket - just copy contact info automatically */}
+                  {quantity === 1 && (
+                    <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg">
+                      <p>The ticket will be issued to: <strong>{bookingData.contact_name || 'Primary Contact'}</strong></p>
+                    </div>
+                  )}
 
                   <button
                     onClick={handleCreateBooking}
                     disabled={loading}
                     className="w-full py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors"
                   >
-                    {loading ? 'Creating Booking...' : 'Continue to Payment'}
+                    {loading ? 'Creating Booking...' : `Continue to Payment - KES ${totalAmount.toLocaleString()}`}
                   </button>
                 </div>
               </div>
@@ -268,8 +413,45 @@ const Checkout = () => {
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
                 <p className="text-gray-600 mb-6">
-                  Your tickets have been booked. Check your email for the tickets.
+                  Your tickets have been booked. Download them now or view them later in My Tickets.
                 </p>
+                
+                {/* Download Tickets Section */}
+                {booking?.tickets?.length > 0 && (
+                  <div className="mb-6 text-left">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3 text-center">
+                      {booking.tickets.length > 1 ? 'Your Tickets' : 'Your Ticket'}
+                    </h3>
+                    <div className="space-y-2">
+                      {booking.tickets.map((ticket, index) => (
+                        <div key={ticket.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Ticket className="w-5 h-5 text-primary-600" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {ticket.attendee_name || `Ticket #${index + 1}`}
+                              </p>
+                              <p className="text-xs text-gray-500">{ticket.ticket_number}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDownloadTicket(ticket.ticket_number)}
+                            disabled={downloadingTickets[ticket.ticket_number]}
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg disabled:opacity-50"
+                          >
+                            {downloadingTickets[ticket.ticket_number] ? (
+                              <Loader className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
+                            Download
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex gap-3">
                   <button
                     onClick={() => navigate('/my-tickets')}

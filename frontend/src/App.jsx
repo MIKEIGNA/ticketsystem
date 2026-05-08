@@ -36,15 +36,10 @@ function App() {
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             
+            {/* Public Routes - Guest checkout supported */}
+            <Route path="checkout" element={<Checkout />} />
+            
             {/* Protected Routes */}
-            <Route
-              path="checkout"
-              element={
-                <ProtectedRoute>
-                  <Checkout />
-                </ProtectedRoute>
-              }
-            />
             <Route
               path="my-tickets"
               element={

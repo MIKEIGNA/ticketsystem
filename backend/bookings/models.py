@@ -16,7 +16,7 @@ class Booking(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     booking_number = models.CharField(max_length=20, unique=True, db_index=True)
-    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='bookings')
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='bookings', null=True, blank=True)
     event = models.ForeignKey('events.Event', on_delete=models.CASCADE, related_name='bookings')
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -47,7 +47,8 @@ class Booking(models.Model):
         ]
 
     def __str__(self):
-        return f"Booking #{self.booking_number} - {self.user.username}"
+        user_info = self.user.username if self.user else "Guest"
+        return f"Booking #{self.booking_number} - {user_info}"
 
     def save(self, *args, **kwargs):
         if not self.booking_number:

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket - {{ event.title }}</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 20px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #667eea;
+            padding: 20px;
+        }
+        
+        .ticket-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .ticket-left {
+            width: 60%;
+            padding: 30px;
+            background-color: #1e3a8a;
+            color: white;
+            vertical-align: top;
+        }
+        
+        .ticket-right {
+            width: 40%;
+            padding: 30px;
+            background-color: white;
+            vertical-align: top;
+            border-left: 2px dashed #e5e7eb;
+        }
+        
+        .event-poster {
+            width: 100%;
+            max-height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .event-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .detail-row {
+            margin-bottom: 15px;
+        }
+        
+        .detail-icon {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        
+        .detail-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 2px;
+        }
+        
+        .detail-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .ticket-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .ticket-badge {
+            display: inline-block;
+            background-color: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .ticket-number {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .ticket-tier {
+            background-color: #fbbf24;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .tier-name {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .tier-price {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .attendee-section {
+            background-color: #f9fafb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .attendee-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .attendee-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+        
+        .attendee-details {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            display: inline-block;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .qr-code {
+            width: 150px;
+            height: 150px;
+        }
+        
+        .qr-instruction {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 10px;
+        }
+        
+        .info-section {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+        
+        .info-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .info-text {
+            font-size: 10px;
+            color: #374151;
+            line-height: 1.4;
+        }
+        
+        .ticket-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #e5e7eb;
+        }
+        
+        .footer-table {
+            width: 100%;
+        }
+        
+        .footer-left {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        
+        .footer-right {
+            text-align: right;
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+        
+        .perforation {
+            width: 2px;
+            background-color: #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <table class="ticket-table">
+        <tr>
+            <!-- Left Side - Event Information -->
+            <td class="ticket-left">
+                {% if event.poster_image %}
+                <img src="{{ event.poster_image.url }}" alt="{{ event.title }}" class="event-poster">
+                {% endif %}
+                
+                <h1 class="event-title">{{ event.title }}</h1>
+                {% if event.subtitle %}
+                <p style="font-size: 14px; opacity: 0.9; margin-bottom: 20px;">{{ event.subtitle }}</p>
+                {% endif %}
+                
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 40px; vertical-align: top;">
+                            <span class="detail-icon">📅</span>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <div class="detail-label">Date & Time</div>
+                            <div class="detail-value">{{ event.start_datetime|date:"l, F j, Y" }}</div>
+                            <div class="detail-value" style="font-size: 12px; opacity: 0.9;">at {{ event.start_datetime|time:"g:i A" }}</div>
+                        </td>
+                    </tr>
+                </table>
+                
+                <table style="width: 100%; margin-top: 15px;">
+                    <tr>
+                        <td style="width: 40px; vertical-align: top;">
+                            <span class="detail-icon">📍</span>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <div class="detail-label">Venue</div>
+                            <div class="detail-value">{{ venue.name }}</div>
+                            <div class="detail-value" style="font-size: 12px; opacity: 0.8;">{{ venue.address }}, {{ venue.city }}</div>
+                        </td>
+                    </tr>
+                </table>
+                
+                <table style="width: 100%; margin-top: 15px;">
+                    <tr>
+                        <td style="width: 40px; vertical-align: top;">
+                            <span class="detail-icon">🎫</span>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <div class="detail-label">Ticket Type</div>
+                            <div class="detail-value">{{ tier.name }}</div>
+                        </td>
+                    </tr>
+                </table>
+                
+                <table style="width: 100%; margin-top: 15px;">
+                    <tr>
+                        <td style="width: 40px; vertical-align: top;">
+                            <span class="detail-icon">💺</span>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <div class="detail-label">Seat</div>
+                            <div class="detail-value">{% if ticket.seat_number %}{{ ticket.seat_number }}{% else %}General Admission{% endif %}</div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            
+            <!-- Right Side - Ticket Details -->
+            <td class="ticket-right">
+                <div class="ticket-header">
+                    <div class="ticket-badge">✓ Valid Ticket</div>
+                    <div class="ticket-number">{{ ticket.ticket_number }}</div>
+                </div>
+                
+                <div class="ticket-tier">
+                    <div class="tier-name">{{ tier.name }}</div>
+                    <div class="tier-price">KES {{ ticket.price_paid }}</div>
+                </div>
+                
+                <div class="attendee-section">
+                    <div class="attendee-title">Attendee</div>
+                    <div class="attendee-name">{{ attendee_name }}</div>
+                    <div class="attendee-details">
+                        {{ attendee_email }}<br>
+                        {{ attendee_phone }}
+                    </div>
+                </div>
+                
+                <div class="qr-section">
+                    <div class="qr-container">
+                        <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code" class="qr-code">
+                    </div>
+                    <div class="qr-instruction">Scan at entrance for quick check-in</div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-title">Important Information</div>
+                    <div class="info-text">
+                        • Please arrive 30 minutes early<br>
+                        • This ticket is non-refundable<br>
+                        • Transferable with ID verification
+                    </div>
+                </div>
+                
+                <div class="ticket-footer">
+                    <table class="footer-table">
+                        <tr>
+                            <td class="footer-left">
+                                Booked on {{ ticket.created_at|date:"M d, Y" }}
+                            </td>
+                            <td class="footer-right">
+                                TicketHub
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -78,7 +78,7 @@ class EventSerializer(serializers.ModelSerializer):
                   'gallery_images', 'video_url', 'age_restriction',
                   'dress_code', 'featured', 'tags', 'status', 'is_public',
                   'view_count', 'is_upcoming', 'days_until_event',
-                  'ticket_tiers', 'lowest_price', 'created_at']
+                  'ticket_tiers', 'lowest_price', 'match_data', 'created_at']
     
     def get_lowest_price(self, obj):
         tiers = obj.ticket_tiers.filter(is_active=True, available_quantity__gt=0)
