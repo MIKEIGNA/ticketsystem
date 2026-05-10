@@ -2,7 +2,8 @@ from rest_framework import generics, permissions, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet
+from django_filters import CharFilter
 from django.utils import timezone
 from django.db.models import Q, Min
 
@@ -13,6 +14,15 @@ from .serializers import (
     EventSerializer, EventListSerializer, EventCreateSerializer,
     TicketTierSerializer, TicketTierCreateSerializer
 )
+
+
+class EventFilter(FilterSet):
+    category_slug = CharFilter(field_name='category__slug')
+    city = CharFilter(field_name='venue__city')
+    
+    class Meta:
+        model = Event
+        fields = ['category', 'status', 'featured', 'category_slug', 'city']
 
 
 # ==================== CATEGORY VIEWS ====================
@@ -64,16 +74,16 @@ class EventListView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter]
     search_fields = ['title', 'subtitle', 'description', 'tags']
-    filterset_fields = ['category', 'status', 'featured', 'venue__city']
+    filterset_class = EventFilter
     ordering_fields = ['start_datetime', 'created_at', 'view_count']
     ordering = ['-start_datetime']
 
     def get_queryset(self):
         queryset = Event.objects.filter(is_public=True, status='published')
         
-        # Filter by date range
-        date_from = self.request.query_params.get('from')
-        date_to = self.request.query_params.get('to')
+        # Filter by date range (support both old and new parameter names)
+        date_from = self.request.query_params.get('date_from') or self.request.query_params.get('from')
+        date_to = self.request.query_params.get('date_to') or self.request.query_params.get('to')
         
         if date_from:
             queryset = queryset.filter(start_datetime__date__gte=date_from)
@@ -91,13 +101,32 @@ class EventListView(generics.ListCreateAPIView):
                 ticket_tiers__is_active=True
             ).distinct()
         
-        # Filter upcoming/finished events
+        # Filter by date type
         filter_type = self.request.query_params.get('filter')
         if filter_type == 'upcoming':
             queryset = queryset.filter(start_datetime__gt=timezone.now())
         elif filter_type == 'today':
             today = timezone.now().date()
             queryset = queryset.filter(start_datetime__date=today)
+        elif filter_type == 'this_week':
+            from datetime import timedelta
+            today = timezone.now().date()
+            start_of_week = today - timedelta(days=today.weekday())
+            end_of_week = start_of_week + timedelta(days=6)
+            queryset = queryset.filter(start_datetime__date__range=[start_of_week, end_of_week])
+        elif filter_type == 'this_month':
+            from datetime import timedelta
+            today = timezone.now().date()
+            start_of_month = today.replace(day=1)
+            # Get last day of month
+            if today.month == 12:
+                end_of_month = start_of_month.replace(year=today.year + 1, month=1, day=1) - timedelta(days=1)
+            else:
+                end_of_month = start_of_month.replace(month=today.month + 1, day=1) - timedelta(days=1)
+            queryset = queryset.filter(start_datetime__date__range=[start_of_month, end_of_month])
+        elif filter_type == 'custom':
+            # Use date_from and date_to parameters
+            pass  # Already handled above
         elif filter_type == 'finished':
             queryset = queryset.filter(start_datetime__lt=timezone.now())
         
