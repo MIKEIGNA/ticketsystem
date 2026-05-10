@@ -27,8 +27,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Layout />}>
-            {/* Public Routes */}
-            <Route index element={<Home />} />
+            {/* Public Routes - Events is now the home page */}
+            <Route index element={<Events />} />
             <Route path="events" element={<Events />} />
             <Route path="events/:slug" element={<EventDetail />} />
             <Route path="categories" element={<Events />} />

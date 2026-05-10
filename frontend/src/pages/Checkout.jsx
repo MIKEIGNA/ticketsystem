@@ -8,30 +8,43 @@ import { Calendar, MapPin, Ticket, CreditCard, Phone, Loader, CheckCircle, Alert
 const Checkout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { event, tier, quantity } = location.state || {};
+  const { user, isAuthenticated } = useAuth();
+  const { event, tier, quantity, isGuest } = location.state || {};
 
   const [step, setStep] = useState('details'); // details, payment, processing, success
-  const [bookingData, setBookingData] = useState({
-    contact_name: user?.first_name + ' ' + user?.last_name || '',
-    contact_email: user?.email || '',
-    contact_phone: user?.phone_number || '',
-    special_requests: '',
-  });
+
+  // Warn guest users before leaving page if they have tickets to download
+  useEffect(() => {
+    if (step === 'success' && isGuest) {
+      const handleBeforeUnload = (e) => {
+        e.preventDefault();
+        e.returnValue = 'You have tickets available to download. If you leave now, you may not be able to access them again. Are you sure you want to leave?';
+      };
+
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+  }, [step, isGuest]);
+  const getUserFullName = () => {
+    if (user?.first_name && user?.last_name) {
+      return `${user.first_name} ${user.last_name}`;
+    }
+    return '';
+  };
   const [paymentPhone, setPaymentPhone] = useState(user?.phone_number || '');
   const [booking, setBooking] = useState(null);
   const [payment, setPayment] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [downloadingTickets, setDownloadingTickets] = useState({});
-  
-  // Individual ticket details - one entry per ticket
+
+  // Individual ticket details - each ticket gets its own fields
   const [ticketDetails, setTicketDetails] = useState(
     Array(quantity).fill(null).map((_, i) => ({
       ticket_index: i + 1,
-      attendee_name: user?.first_name + ' ' + user?.last_name || '',
-      attendee_email: user?.email || '',
-      attendee_phone: user?.phone_number || '',
+      attendee_name: i === 0 ? getUserFullName() : '',
+      attendee_email: i === 0 ? (user?.email || '') : '',
+      attendee_phone: i === 0 ? (user?.phone_number || '') : '',
     }))
   );
 
@@ -48,28 +61,22 @@ const Checkout = () => {
 
     try {
       // Create tickets array with individual details for each ticket
-      let tickets;
-      if (quantity === 1) {
-        // Single ticket - use primary contact info
-        tickets = [{
-          ticket_tier_id: tier.id,
-          attendee_name: bookingData.contact_name,
-          attendee_email: bookingData.contact_email,
-          attendee_phone: bookingData.contact_phone,
-        }];
-      } else {
-        // Multiple tickets - use individual details
-        tickets = ticketDetails.map((detail) => ({
-          ticket_tier_id: tier.id,
-          attendee_name: detail.attendee_name,
-          attendee_email: detail.attendee_email,
-          attendee_phone: detail.attendee_phone,
-        }));
-      }
+      const tickets = ticketDetails.map((detail) => ({
+        ticket_tier_id: tier.id,
+        attendee_name: detail.attendee_name,
+        attendee_email: detail.attendee_email,
+        attendee_phone: detail.attendee_phone,
+      }));
+
+      // Use first ticket details as booking contact info
+      const bookingContact = ticketDetails[0];
 
       const response = await bookingService.createBooking({
         event_id: event.id,
-        ...bookingData,
+        contact_name: bookingContact.attendee_name,
+        contact_email: bookingContact.attendee_email,
+        contact_phone: bookingContact.attendee_phone,
+        special_requests: '',
         tickets,
       });
 
@@ -91,14 +98,15 @@ const Checkout = () => {
     );
   };
 
-  const copyContactToAll = () => {
+  const copyFirstTicketToAll = () => {
+    const firstTicket = ticketDetails[0];
     setTicketDetails(prev =>
-      prev.map(ticket => ({
+      prev.map((ticket, index) => index === 0 ? ticket : {
         ...ticket,
-        attendee_name: bookingData.contact_name,
-        attendee_email: bookingData.contact_email,
-        attendee_phone: bookingData.contact_phone,
-      }))
+        attendee_name: firstTicket.attendee_name,
+        attendee_email: firstTicket.attendee_email,
+        attendee_phone: firstTicket.attendee_phone,
+      })
     );
   };
 
@@ -197,11 +205,26 @@ const Checkout = () => {
           <div className="md:col-span-2">
             {step === 'details' && (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Contact Information</h2>
+                {/* Guest Checkout Banner */}
+                {isGuest && !isAuthenticated && (
+                  <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold text-blue-900">Continue as Guest</h3>
+                        <p className="text-sm text-blue-700 mt-1">
+                          You're checking out as a guest. Enter your details below to complete your booking.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Ticket Information</h2>
                 <p className="text-gray-600 text-sm mb-6">
-                  {quantity > 1 
+                  {quantity > 1
                     ? `You're booking ${quantity} tickets. Enter details for each attendee below.`
-                    : "Enter your contact details for the booking."}
+                    : "Enter attendee details for the ticket."}
                 </p>
 
                 {error && (
@@ -211,122 +234,70 @@ const Checkout = () => {
                 )}
 
                 <div className="space-y-5">
-                  {/* Primary Contact Info */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-gray-900 mb-4">Primary Contact (Booking Owner)</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="label">Full Name *</label>
-                        <input
-                          type="text"
-                          value={bookingData.contact_name}
-                          onChange={(e) => setBookingData({ ...bookingData, contact_name: e.target.value })}
-                          className="input"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="label">Email *</label>
-                        <input
-                          type="email"
-                          value={bookingData.contact_email}
-                          onChange={(e) => setBookingData({ ...bookingData, contact_email: e.target.value })}
-                          className="input"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="label">Phone Number *</label>
-                        <input
-                          type="tel"
-                          value={bookingData.contact_phone}
-                          onChange={(e) => setBookingData({ ...bookingData, contact_phone: e.target.value })}
-                          className="input"
-                          placeholder="254XXXXXXXXX"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="label">Special Requests (Optional)</label>
-                        <textarea
-                          value={bookingData.special_requests}
-                          onChange={(e) => setBookingData({ ...bookingData, special_requests: e.target.value })}
-                          className="input h-10 resize-none"
-                          placeholder="Any special requirements..."
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Individual Ticket Details */}
-                  {quantity > 1 && (
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-gray-900">Ticket Details ({quantity} tickets)</h3>
+                  {/* Ticket Details - All tickets shown individually */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-gray-900">Ticket Details ({quantity} {quantity === 1 ? 'ticket' : 'tickets'})</h3>
+                      {quantity > 1 && (
                         <button
                           type="button"
-                          onClick={copyContactToAll}
+                          onClick={copyFirstTicketToAll}
                           className="text-sm text-primary-600 hover:text-primary-700 font-medium"
                         >
-                          Copy primary contact to all
+                          Copy first ticket to all
                         </button>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        {ticketDetails.map((ticket, index) => (
-                          <div key={`ticket-${index}`} className="border border-gray-200 rounded-lg p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                              <Ticket className="w-4 h-4 text-primary-600" />
-                              <h4 className="font-medium text-gray-900">Ticket #{index + 1}</h4>
-                              <span className="text-xs text-gray-500">({tier.name})</span>
+                      )}
+                    </div>
+
+                    <div className="space-y-4">
+                      {ticketDetails.map((ticket, index) => (
+                        <div key={`ticket-${index}`} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Ticket className="w-4 h-4 text-primary-600" />
+                            <h4 className="font-medium text-gray-900">
+                              Ticket #{index + 1}
+                            </h4>
+                            <span className="text-xs text-gray-500">({tier.name})</span>
+                          </div>
+                          <div className="grid md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="label text-xs">Attendee Name *</label>
+                              <input
+                                type="text"
+                                value={ticket.attendee_name}
+                                onChange={(e) => updateTicketDetail(index, 'attendee_name', e.target.value)}
+                                className="input text-sm"
+                                placeholder="Full name"
+                                required
+                              />
                             </div>
-                            <div className="grid md:grid-cols-3 gap-4">
-                              <div>
-                                <label className="label text-xs">Attendee Name *</label>
-                                <input
-                                  type="text"
-                                  value={ticket.attendee_name}
-                                  onChange={(e) => updateTicketDetail(index, 'attendee_name', e.target.value)}
-                                  className="input text-sm"
-                                  placeholder="Full name"
-                                  required
-                                />
-                              </div>
-                              <div>
-                                <label className="label text-xs">Attendee Email *</label>
-                                <input
-                                  type="email"
-                                  value={ticket.attendee_email}
-                                  onChange={(e) => updateTicketDetail(index, 'attendee_email', e.target.value)}
-                                  className="input text-sm"
-                                  placeholder="email@example.com"
-                                  required
-                                />
-                              </div>
-                              <div>
-                                <label className="label text-xs">Attendee Phone *</label>
-                                <input
-                                  type="tel"
-                                  value={ticket.attendee_phone}
-                                  onChange={(e) => updateTicketDetail(index, 'attendee_phone', e.target.value)}
-                                  className="input text-sm"
-                                  placeholder="254XXXXXXXXX"
-                                  required
-                                />
-                              </div>
+                            <div>
+                              <label className="label text-xs">Attendee Email *</label>
+                              <input
+                                type="email"
+                                value={ticket.attendee_email}
+                                onChange={(e) => updateTicketDetail(index, 'attendee_email', e.target.value)}
+                                className="input text-sm"
+                                placeholder="email@example.com"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="label text-xs">Attendee Phone *</label>
+                              <input
+                                type="tel"
+                                value={ticket.attendee_phone}
+                                onChange={(e) => updateTicketDetail(index, 'attendee_phone', e.target.value)}
+                                className="input text-sm"
+                                placeholder="254XXXXXXXXX"
+                                required
+                              />
                             </div>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
-                  )}
-
-                  {/* Single Ticket - just copy contact info automatically */}
-                  {quantity === 1 && (
-                    <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg">
-                      <p>The ticket will be issued to: <strong>{bookingData.contact_name || 'Primary Contact'}</strong></p>
-                    </div>
-                  )}
+                  </div>
 
                   <button
                     onClick={handleCreateBooking}
@@ -416,6 +387,21 @@ const Checkout = () => {
                 <p className="text-gray-600 mb-6">
                   Your tickets have been booked. Download them now or view them later in My Tickets.
                 </p>
+
+                {/* Warning Banner - Only for guests */}
+                {isGuest && (
+                  <div className="mb-6 p-4 bg-amber-50 border-2 border-amber-400 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div className="text-left">
+                        <h4 className="font-bold text-amber-900 mb-1">Important: Download Your Tickets Now!</h4>
+                        <p className="text-sm text-amber-800">
+                          You're checking out as a guest. Please download your tickets before leaving this page. Once you leave, you won't be able to access them again.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Download Tickets Section */}
                 {booking?.tickets?.length > 0 && (

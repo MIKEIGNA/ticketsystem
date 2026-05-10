@@ -17,8 +17,7 @@ const Events = () => {
     min_price: searchParams.get('min_price') || '',
     max_price: searchParams.get('max_price') || '',
     city: searchParams.get('city') || '',
-    date_from: searchParams.get('date_from') || '',
-    date_to: searchParams.get('date_to') || '',
+    date: searchParams.get('date') || '',
   });
 
   useEffect(() => {
@@ -64,8 +63,7 @@ const Events = () => {
       min_price: '',
       max_price: '',
       city: '',
-      date_from: '',
-      date_to: '',
+      date: '',
     });
     setSearchParams(new URLSearchParams());
   };
@@ -78,10 +76,10 @@ const Events = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Discover Events
+            Top Events
           </h1>
           <p className="text-gray-600">
-            Find the perfect event for you
+            Discover the best upcoming events
           </p>
         </div>
 
@@ -114,6 +112,18 @@ const Events = () => {
               ))}
             </select>
 
+            {/* Calendar Date Picker */}
+            <div className="relative">
+              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="date"
+                value={filters.date}
+                onChange={(e) => updateFilter('date', e.target.value)}
+                className="lg:w-48 pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="Select date"
+              />
+            </div>
+
             {/* Date Filter */}
             <select
               value={filters.filter}
@@ -124,7 +134,6 @@ const Events = () => {
               <option value="today">Today</option>
               <option value="this_week">This Week</option>
               <option value="this_month">This Month</option>
-              <option value="custom">Custom Range</option>
               <option value="finished">Past Events</option>
             </select>
           </div>
@@ -196,10 +205,10 @@ const Events = () => {
           </div>
         </div>
 
-        {/* Results */}
+        {/* Results - 3 rows of events */}
         {loading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
               <div key={i} className="bg-white rounded-xl h-80 animate-pulse" />
             ))}
           </div>

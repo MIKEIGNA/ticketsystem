@@ -28,8 +28,34 @@ def _qr_base64(data: str, fill_color: str, back_color: str = "white") -> str:
 
 
 def fetch_image_as_data_uri(url: str | None, timeout: int = 8) -> str | None:
-    if not url or not url.startswith(("http://", "https://")):
+    if not url:
         return None
+    
+    # Handle local static files
+    if url.startswith("/static/"):
+        try:
+            from django.conf import settings
+            import os
+            # Build absolute path from static URL
+            static_path = url.replace("/static/", "")
+            file_path = os.path.join(settings.BASE_DIR, "static", static_path)
+            
+            if os.path.exists(file_path):
+                with open(file_path, "rb") as f:
+                    content = f.read()
+                img = Image.open(BytesIO(content)).convert("RGBA")
+                out = BytesIO()
+                img.save(out, format="PNG")
+                b64 = base64.b64encode(out.getvalue()).decode()
+                return f"data:image/png;base64,{b64}"
+        except Exception:
+            pass
+        return None
+    
+    # Handle HTTP/HTTPS URLs
+    if not url.startswith(("http://", "https://")):
+        return None
+    
     try:
         r = requests.get(
             url,
@@ -81,7 +107,7 @@ def _sports_match_context(event, tier, ticket, qr_base64: str):
         "away_team_logo_data_uri": away_logo_uri,
         "fkf_logo_data_uri": fetch_image_as_data_uri(fkf.get("logo")),
         "league_category": md.get("category") or "",
-        "stadium_line": (md.get("stadium") or event.venue.name or "").upper(),
+        "stadium_line": (md.get("stadium") or (event.venue.name if event.venue else None) or "Venue TBA").upper(),
         "organizer_display": organizer_display,
         "tier_admission_label": f"{tier.name.upper()} ADMISSION",
         "qr_base64": qr_base64,

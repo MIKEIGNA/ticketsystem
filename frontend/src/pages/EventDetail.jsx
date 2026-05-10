@@ -4,7 +4,7 @@ import { eventService } from '../services/events';
 import { useAuth } from '../context/AuthContext';
 import { 
   Calendar, MapPin, Clock, Users, AlertCircle, 
-  Check, Share2, Heart, ChevronRight, Ticket
+  Check, Share2, Heart, ChevronRight, Ticket, UserPlus, LogIn, User
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import '../styles/clubColors.css';
@@ -17,6 +17,7 @@ const EventDetail = () => {
   const [selectedTier, setSelectedTier] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -33,6 +34,8 @@ const EventDetail = () => {
     fetchEvent();
   }, [slug]);
 
+  const isPastEvent = event ? new Date(event.start_datetime) < new Date() : false;
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return {
@@ -43,22 +46,45 @@ const EventDetail = () => {
   };
 
   const handleBookNow = () => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: `/events/${slug}` } });
-      return;
-    }
-
     if (!selectedTier) {
       return;
     }
 
+    // If not authenticated, show auth options modal
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    // Proceed to checkout for authenticated users
     navigate('/checkout', {
       state: {
         event,
         tier: selectedTier,
         quantity,
+        isGuest: false,
       },
     });
+  };
+
+  const handleContinueAsGuest = () => {
+    setShowAuthModal(false);
+    navigate('/checkout', {
+      state: {
+        event,
+        tier: selectedTier,
+        quantity,
+        isGuest: true,
+      },
+    });
+  };
+
+  const handleSignIn = () => {
+    navigate('/login', { state: { from: `/events/${slug}`, redirectToCheckout: true, event, tier: selectedTier, quantity } });
+  };
+
+  const handleCreateAccount = () => {
+    navigate('/register', { state: { from: `/events/${slug}`, redirectToCheckout: true, event, tier: selectedTier, quantity } });
   };
 
   if (loading) {
@@ -237,6 +263,19 @@ const EventDetail = () => {
                     <p className="text-sm text-gray-500">Away</p>
                   </div>
                 </div>
+
+                {/* Stadium/Venue */}
+                {(event.match_data?.stadium || event.venue?.name) && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <MapPin className="w-5 h-5 text-secondary-600" />
+                      <span className="font-semibold text-gray-900">
+                        {event.match_data?.stadium || event.venue?.name}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">Venue</p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -314,12 +353,79 @@ const EventDetail = () => {
             )}
           </div>
 
-          {/* Sidebar - Tickets */}
+          {/* Sidebar - Tickets or Results */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 sticky top-24">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Select Tickets</h2>
+              {isPastEvent ? (
+                <>
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Match Results</h2>
+                  {event.match_data?.home_team && event.match_data?.away_team ? (
+                    <div className="text-center py-6">
+                      <div className="flex items-center justify-center gap-4 mb-6">
+                        {/* Home Team */}
+                        <div className="flex flex-col items-center">
+                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden mb-2">
+                            {event.match_data.home_team_logo ? (
+                              <img
+                                src={event.match_data.home_team_logo}
+                                alt={event.match_data.home_team}
+                                className="w-12 h-12 object-contain"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              <div className="text-xl font-bold text-gray-400">
+                                {event.match_data.home_team.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <p className="font-semibold text-gray-900 text-sm">{event.match_data.home_team}</p>
+                        </div>
 
-              {availableTiers.length > 0 ? (
+                        {/* Score */}
+                        <div className="flex flex-col items-center px-4">
+                          <div className="text-3xl font-bold text-gray-900">
+                            {event.match_data.home_score ?? 0} - {event.match_data.away_score ?? 0}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Final Score</p>
+                        </div>
+
+                        {/* Away Team */}
+                        <div className="flex flex-col items-center">
+                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden mb-2">
+                            {event.match_data.away_team_logo ? (
+                              <img
+                                src={event.match_data.away_team_logo}
+                                alt={event.match_data.away_team}
+                                className="w-12 h-12 object-contain"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              <div className="text-xl font-bold text-gray-400">
+                                {event.match_data.away_team.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <p className="font-semibold text-gray-900 text-sm">{event.match_data.away_team}</p>
+                        </div>
+                      </div>
+                      <div className="bg-gray-100 rounded-lg p-4 text-center">
+                        <p className="text-sm text-gray-600">This event has ended</p>
+                        <p className="text-xs text-gray-500 mt-1">Ticket sales are closed</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 mb-2">This event has ended</p>
+                      <p className="text-sm text-gray-500">Ticket sales are closed</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Select Tickets</h2>
+
+                  {availableTiers.length > 0 ? (
                 <div className="space-y-4">
                   {availableTiers.map((tier) => (
                     <div
@@ -416,10 +522,84 @@ const EventDetail = () => {
                   <p className="text-gray-600">No tickets available</p>
                 </div>
               )}
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Auth Options Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Ticket className="w-8 h-8 text-primary-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Continue Booking</h2>
+              <p className="text-gray-600">Choose how you'd like to proceed with your ticket purchase</p>
+            </div>
+
+            <div className="space-y-3">
+              {/* Sign In Option */}
+              <button
+                onClick={handleSignIn}
+                className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                    <LogIn className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-gray-900">Sign In</h3>
+                    <p className="text-sm text-gray-500">Already have an account</p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Create Account Option */}
+              <button
+                onClick={handleCreateAccount}
+                className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                    <UserPlus className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-gray-900">Create Account</h3>
+                    <p className="text-sm text-gray-500">New to TicketHub</p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Continue as Guest Option */}
+              <button
+                onClick={handleContinueAsGuest}
+                className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                    <User className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-gray-900">Continue as Guest</h3>
+                    <p className="text-sm text-gray-500">Quick checkout without account</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="w-full mt-6 py-3 text-gray-500 hover:text-gray-700 font-medium transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

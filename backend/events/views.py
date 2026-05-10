@@ -19,10 +19,11 @@ from .serializers import (
 class EventFilter(FilterSet):
     category_slug = CharFilter(field_name='category__slug')
     city = CharFilter(field_name='venue__city')
+    date = CharFilter(field_name='start_datetime', lookup_expr='date')
     
     class Meta:
         model = Event
-        fields = ['category', 'status', 'featured', 'category_slug', 'city']
+        fields = ['category', 'status', 'featured', 'category_slug', 'city', 'date']
 
 
 # ==================== CATEGORY VIEWS ====================
@@ -80,6 +81,11 @@ class EventListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Event.objects.filter(is_public=True, status='published')
+        
+        # Filter by specific date
+        date = self.request.query_params.get('date')
+        if date:
+            queryset = queryset.filter(start_datetime__date=date)
         
         # Filter by date range (support both old and new parameter names)
         date_from = self.request.query_params.get('date_from') or self.request.query_params.get('from')

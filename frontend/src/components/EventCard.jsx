@@ -13,6 +13,7 @@ const EventCard = ({ event, featured = false }) => {
   };
 
   const date = formatDate(event.start_datetime);
+  const isPastEvent = new Date(event.start_datetime) < new Date();
 
   return (
     <Link
@@ -95,6 +96,15 @@ const EventCard = ({ event, featured = false }) => {
               style={{ backgroundColor: event.category.color || '#ec4899' }}
             >
               {event.category.name}
+            </span>
+          </div>
+        )}
+
+        {/* Event Ended Badge */}
+        {isPastEvent && (
+          <div className="absolute top-3 right-3">
+            <span className="px-3 py-1 text-xs font-medium text-white bg-gray-900/80 backdrop-blur-sm rounded-full">
+              Event Ended
             </span>
           </div>
         )}
@@ -189,18 +199,37 @@ const EventCard = ({ event, featured = false }) => {
             <MapPin className="w-4 h-4 flex-shrink-0" />
             <span className="truncate">{event.venue_name}, {event.venue_city}</span>
           </div>
+          
+          {/* Show stadium for sports events if available */}
+          {event.category?.slug === 'sports' && event.match_data?.stadium && (
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <MapPin className="w-4 h-4 flex-shrink-0 text-secondary-600" />
+              <span className="truncate font-medium">{event.match_data.stadium}</span>
+            </div>
+          )}
         </div>
 
         {/* CTA */}
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-sm font-medium text-primary-600 group-hover:text-primary-700 flex items-center gap-1">
-            <TicketIcon className="w-4 h-4" />
-            Get Tickets
-          </span>
+          {isPastEvent ? (
+            <span className="text-sm font-medium text-gray-500 flex items-center gap-1">
+              View Results
+            </span>
+          ) : (
+            <span className="text-sm font-medium text-primary-600 group-hover:text-primary-700 flex items-center gap-1">
+              <TicketIcon className="w-4 h-4" />
+              Get Tickets
+            </span>
+          )}
           
-          {event.days_until_event > 0 && (
+          {event.days_until_event > 0 && !isPastEvent && (
             <span className="text-xs text-gray-400">
               In {event.days_until_event} days
+            </span>
+          )}
+          {isPastEvent && (
+            <span className="text-xs text-gray-400">
+              Event ended
             </span>
           )}
         </div>

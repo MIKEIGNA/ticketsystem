@@ -182,5 +182,9 @@ def enrich_match_data_logos(match_data: dict | None) -> dict:
             md[key_sec] = assets["secondary_color"]
     branding = dict(md.get("branding") or {})
     branding["kpl"] = {**(branding.get("kpl") or {}), **kpl_league_branding()}
+    # Add FKF logo URL - using local static file
+    branding["fkf"] = {
+        "logo": "/static/images/fkf-logo.png"
+    }
     md["branding"] = branding
     return md

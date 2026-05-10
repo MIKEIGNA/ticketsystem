@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Lock, Eye, EyeOff, Phone, Ticket, Check } from 'lucide-react';
 
@@ -20,6 +20,14 @@ const Register = () => {
 
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const redirectToCheckout = location.state?.redirectToCheckout || false;
+  const checkoutData = {
+    event: location.state?.event,
+    tier: location.state?.tier,
+    quantity: location.state?.quantity,
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,9 +46,22 @@ const Register = () => {
 
     try {
       await register(formData);
-      navigate('/login', { 
-        state: { message: 'Registration successful! Please sign in.' }
-      });
+      // If user was trying to checkout, pass checkout data to login page
+      if (redirectToCheckout && checkoutData.event && checkoutData.tier) {
+        navigate('/login', {
+          state: {
+            message: 'Registration successful! Please sign in to continue.',
+            redirectToCheckout: true,
+            event: checkoutData.event,
+            tier: checkoutData.tier,
+            quantity: checkoutData.quantity,
+          }
+        });
+      } else {
+        navigate('/login', {
+          state: { message: 'Registration successful! Please sign in.' }
+        });
+      }
     } catch (err) {
       const errors = err.response?.data;
       if (errors) {

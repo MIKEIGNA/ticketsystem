@@ -17,6 +17,12 @@ const Login = () => {
   const location = useLocation();
 
   const from = location.state?.from || '/';
+  const redirectToCheckout = location.state?.redirectToCheckout || false;
+  const checkoutData = {
+    event: location.state?.event,
+    tier: location.state?.tier,
+    quantity: location.state?.quantity,
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,7 +35,20 @@ const Login = () => {
 
     try {
       await login(formData);
-      navigate(from, { replace: true });
+      // If user was trying to checkout, redirect to checkout with ticket details
+      if (redirectToCheckout && checkoutData.event && checkoutData.tier) {
+        navigate('/checkout', {
+          replace: true,
+          state: {
+            event: checkoutData.event,
+            tier: checkoutData.tier,
+            quantity: checkoutData.quantity,
+            isGuest: false,
+          },
+        });
+      } else {
+        navigate(from, { replace: true });
+      }
     } catch (err) {
       setError(err.response?.data?.detail || 'Invalid username or password');
     } finally {

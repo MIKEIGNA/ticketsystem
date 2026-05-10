@@ -77,8 +77,19 @@ def _event_status(row: dict[str, Any]) -> str:
     return "published"
 
 
+def _clean_stadium_name(venue: str | None) -> str:
+    """Filter out generic/bad venue names from TheSportsDB."""
+    if not venue:
+        return ""
+    name = str(venue).strip()
+    bad_venue_names = ["kenyan premier league", "premier league stadium"]
+    if any(bad in name.lower() for bad in bad_venue_names):
+        return ""
+    return name
+
+
 def _venue_for_row(row: dict[str, Any]) -> Venue:
-    name = (row.get("strVenue") or "").strip() or "Venue TBA"
+    name = _clean_stadium_name(row.get("strVenue")) or "Venue TBA"
     city = (row.get("strCity") or "").strip() or "Unknown"
     country = (row.get("strCountry") or "").strip() or "Kenya"
     venue, _ = Venue.objects.get_or_create(
@@ -129,7 +140,7 @@ def _match_data_from_row(row: dict[str, Any], league_id: str) -> dict[str, Any]:
         "away_team_primary_color": aa.get("primary_color", "#000000"),
         "away_team_secondary_color": aa.get("secondary_color", "#FFFFFF"),
         "category": "B",
-        "stadium": (row.get("strVenue") or "").strip(),
+        "stadium": _clean_stadium_name(row.get("strVenue")),
         "strStatus": row.get("strStatus"),
         "strPostponed": row.get("strPostponed"),
         "intRound": row.get("intRound"),
