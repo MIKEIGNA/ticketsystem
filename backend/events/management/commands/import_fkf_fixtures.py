@@ -1,39 +1,39 @@
 """
-Import FKF fixtures as sports events.
+Import FKF fixtures as sports events (KPL club badges from TheSportsDB league 4745).
 
 Usage:
-    python manage.py import_fkf_fixtures [--organizer-id <uuid>]
+    python manage.py import_fkf_fixtures [--organizer-id <uuid>] [--clear-existing]
+    python manage.py import_fkf_fixtures --refresh-logos
 """
 
-import json
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from events.models import Category, Venue, Event, TicketTier
+from events.kpl_team_logos import get_team_assets, KPL_THESPORTSDB
 from accounts.models import User
 
 
-# Team logo URLs
-TEAM_ASSETS = {
-    "Gor Mahia": "https://upload.wikimedia.org/wikipedia/en/7/75/Gor_Mahia_FC_logo.png",
-    "AFC Leopards": "https://upload.wikimedia.org/wikipedia/en/e/e0/AFC_Leopards_logo.png",
-    "Kenya Police FC": "https://pbs.twimg.com/profile_images/1450711904791535616/7fE0X4_R_400x400.jpg",
-    "Tusker FC": "https://upload.wikimedia.org/wikipedia/en/d/d3/Tusker_FC_logo.png",
-    "Bandari FC": "https://upload.wikimedia.org/wikipedia/en/6/6a/Bandari_FC_logo.png",
-    "KCB FC": "https://upload.wikimedia.org/wikipedia/en/a/a2/KCB_FC_logo.png",
-    "Kakamega Homeboyz": "https://pbs.twimg.com/profile_images/1155793080033992704/9E-1Hq-6_400x400.jpg",
-    "Murang'a SEAL": "https://pbs.twimg.com/profile_images/1699042296718749696/S_6lXkZ4_400x400.jpg",
-    "Shabana FC": "https://pbs.twimg.com/profile_images/1678734005161725952/xH8B0wNf_400x400.jpg",
-    "Ulinzi Stars": "https://upload.wikimedia.org/wikipedia/en/1/1e/Ulinzi_Stars_logo.png",
-    "Kariobangi Sharks": "https://upload.wikimedia.org/wikipedia/en/7/71/Kariobangi_Sharks_logo.png",
-    "Posta Rangers": "https://pbs.twimg.com/profile_images/1283685412401254400/6-Y6p8jH_400x400.jpg",
-    "Sofapaka FC": "https://upload.wikimedia.org/wikipedia/en/8/8e/Sofapaka_FC_logo.png",
-    "Mathare United": "https://upload.wikimedia.org/wikipedia/en/e/e5/Mathare_United_logo.png",
-    "Bidco United": "https://pbs.twimg.com/profile_images/1330843232230158337/XfHqT9f7_400x400.jpg",
-    "Nairobi United": "https://pbs.twimg.com/profile_images/1689254881699311616/6p9-8_Fm_400x400.jpg",
-    "Mara Sugar FC": "https://pbs.twimg.com/profile_images/1458392135916666880/P6bHkP7a_400x400.jpg",
-    "APS Bomet": "https://pbs.twimg.com/profile_images/1547847775684075520/2XpU-RjX_400x400.jpg"
+# FKF League Branding
+FKF_BRANDING = {
+    "name": "FKF Premier League",
+    "logo": "https://footballkenya.org/wp-content/uploads/2023/02/fkf-logo.png",
+    "colors": {
+        "red": "#DC3232",
+        "black": "#000000",
+        "green": "#43A047",
+    },
+}
+
+# Title Sponsor
+TITLE_SPONSOR = {
+    "name": "SportPesa",
+    "logo": "https://www.sportpesa.co.ke/assets/images/sportpesa-logo.png",
+    "colors": {
+        "primary": "#0059B3",
+        "white": "#FFFFFF"
+    }
 }
 
 FKF_FIXTURES = [
@@ -167,12 +167,18 @@ class Command(BaseCommand):
         parser.add_argument(
             '--clear-existing',
             action='store_true',
-            help='Delete existing FKF events before importing'
+            help='Delete existing FKF Premier League events before importing'
+        )
+        parser.add_argument(
+            '--refresh-logos',
+            action='store_true',
+            help='Update match_data team badges from TheSportsDB KPL for existing imports, then exit'
         )
 
     def handle(self, *args, **options):
         organizer_id = options['organizer_id']
         clear_existing = options['clear_existing']
+        refresh_logos = options['refresh_logos']
         
         # Get or create Sports category
         sports_category, _ = Category.objects.get_or_create(
@@ -194,15 +200,22 @@ class Command(BaseCommand):
             )
             return
         self.stdout.write(f"Using organizer: {organizer.email}")
-        
-        # Clear existing FKF events if requested
+
+        if refresh_logos:
+            n = self.refresh_kpl_logos(sports_category)
+            self.stdout.write(
+                self.style.SUCCESS(f"Updated TheSportsDB KPL logos on {n} event(s).")
+            )
+            return
+
+        # Clear existing FKF Premier League events if requested
         if clear_existing:
             deleted_count, _ = Event.objects.filter(
-                title__icontains='FKF',
-                category=sports_category
+                subtitle__icontains='FKF Premier League',
+                category=sports_category,
             ).delete()
-            self.stdout.write(f"Deleted {deleted_count} existing FKF events")
-        
+            self.stdout.write(f"Deleted {deleted_count} existing FKF Premier League events")
+
         # Create venues and events
         created_count = 0
         with transaction.atomic():
@@ -217,6 +230,48 @@ class Command(BaseCommand):
             self.style.SUCCESS(f'Successfully imported {created_count} FKF fixtures!')
         )
     
+    def refresh_kpl_logos(self, sports_category):
+        """Re-apply KPL TheSportsDB badges to events from a previous import."""
+        qs = Event.objects.filter(
+            category=sports_category,
+            subtitle__icontains='FKF Premier League',
+        )
+        updated = 0
+        for event in qs:
+            md = dict(event.match_data) if event.match_data else {}
+            home = md.get('home_team')
+            away = md.get('away_team')
+            if not home or not away:
+                continue
+            ha = get_team_assets(home)
+            aa = get_team_assets(away)
+            if ha.get('logo'):
+                md['home_team_logo'] = ha['logo']
+                md['home_team_primary_color'] = ha.get(
+                    'primary_color', md.get('home_team_primary_color', '#000000')
+                )
+                md['home_team_secondary_color'] = ha.get(
+                    'secondary_color', md.get('home_team_secondary_color', '#FFFFFF')
+                )
+            if aa.get('logo'):
+                md['away_team_logo'] = aa['logo']
+                md['away_team_primary_color'] = aa.get(
+                    'primary_color', md.get('away_team_primary_color', '#000000')
+                )
+                md['away_team_secondary_color'] = aa.get(
+                    'secondary_color', md.get('away_team_secondary_color', '#FFFFFF')
+                )
+            branding = dict(md.get('branding') or {})
+            branding['fkf'] = FKF_BRANDING
+            branding['sponsor'] = TITLE_SPONSOR
+            branding['kpl'] = KPL_THESPORTSDB
+            md['branding'] = branding
+            event.match_data = md
+            event.save(update_fields=['match_data'])
+            updated += 1
+            self.stdout.write(f"  Refreshed logos: {event.title}")
+        return updated
+
     def get_organizer(self, organizer_id):
         """Get the organizer user"""
         if organizer_id:
@@ -271,9 +326,9 @@ class Command(BaseCommand):
         # Football matches typically last 2 hours
         end_datetime = start_datetime + timedelta(hours=2)
         
-        # Get team logos
-        home_team_logo = TEAM_ASSETS.get(fixture['home_team'], '')
-        away_team_logo = TEAM_ASSETS.get(fixture['away_team'], '')
+        # Get team assets (TheSportsDB KPL badges + colors)
+        home_assets = get_team_assets(fixture["home_team"])
+        away_assets = get_team_assets(fixture["away_team"])
         
         # Create event
         event = Event.objects.create(
@@ -296,10 +351,19 @@ class Command(BaseCommand):
                 'match_id': fixture['match_id'],
                 'home_team': fixture['home_team'],
                 'away_team': fixture['away_team'],
-                'home_team_logo': home_team_logo,
-                'away_team_logo': away_team_logo,
+                'home_team_logo': home_assets.get('logo', ''),
+                'away_team_logo': away_assets.get('logo', ''),
+                'home_team_primary_color': home_assets.get('primary_color', '#000000'),
+                'home_team_secondary_color': home_assets.get('secondary_color', '#FFFFFF'),
+                'away_team_primary_color': away_assets.get('primary_color', '#000000'),
+                'away_team_secondary_color': away_assets.get('secondary_color', '#FFFFFF'),
                 'category': fixture['category'],
                 'stadium': fixture['stadium'],
+                'branding': {
+                    'fkf': FKF_BRANDING,
+                    'sponsor': TITLE_SPONSOR,
+                    'kpl': KPL_THESPORTSDB,
+                }
             },
         )
         

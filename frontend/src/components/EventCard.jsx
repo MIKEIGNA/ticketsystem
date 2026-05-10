@@ -24,11 +24,68 @@ const EventCard = ({ event, featured = false }) => {
     >
       {/* Image */}
       <div className={cn('relative overflow-hidden', featured ? 'aspect-[4/3]' : 'aspect-[16/10]')}>
-        <img
-          src={event.poster_image || '/placeholder-event.jpg'}
-          alt={event.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+        {/* Sports fixtures without poster: show enlarged team logos */}
+        {event.category?.slug === 'sports' &&
+          !event.poster_image &&
+          event.match_data?.home_team &&
+          event.match_data?.away_team ? (
+            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center gap-8 p-8">
+              {/* Home Team Logo */}
+              <div className="flex-1 flex flex-col items-center">
+                {event.match_data.home_team_logo ? (
+                  <img
+                    src={event.match_data.home_team_logo}
+                    alt={event.match_data.home_team}
+                    className="w-24 h-24 object-contain drop-shadow-lg"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-3xl font-bold text-gray-600">
+                      {event.match_data.home_team.charAt(0)}
+                    </span>
+                  </div>
+                )}
+                <span className="text-sm font-semibold text-gray-800 mt-3 text-center line-clamp-2">
+                  {event.match_data.home_team}
+                </span>
+              </div>
+
+              {/* VS Badge */}
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-lg font-bold text-gray-800">VS</span>
+                </div>
+              </div>
+
+              {/* Away Team Logo */}
+              <div className="flex-1 flex flex-col items-center">
+                {event.match_data.away_team_logo ? (
+                  <img
+                    src={event.match_data.away_team_logo}
+                    alt={event.match_data.away_team}
+                    className="w-24 h-24 object-contain drop-shadow-lg"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-3xl font-bold text-gray-600">
+                      {event.match_data.away_team.charAt(0)}
+                    </span>
+                  </div>
+                )}
+                <span className="text-sm font-semibold text-gray-800 mt-3 text-center line-clamp-2">
+                  {event.match_data.away_team}
+                </span>
+              </div>
+            </div>
+        ) : (
+          <img
+            src={event.poster_image || '/placeholder-event.jpg'}
+            alt={event.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        )}
         
         {/* Category Badge */}
         {event.category && (
@@ -41,6 +98,44 @@ const EventCard = ({ event, featured = false }) => {
             </span>
           </div>
         )}
+
+        {/* Sports fixtures: club badges from match_data (KPL) - only show when poster exists */}
+        {event.poster_image &&
+          event.category?.slug === 'sports' &&
+          event.match_data?.home_team &&
+          event.match_data?.away_team && (
+            <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm rounded-full px-2 py-1 shadow-sm border border-gray-100">
+              <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden">
+                {event.match_data.home_team_logo ? (
+                  <img
+                    src={event.match_data.home_team_logo}
+                    alt=""
+                    className="w-7 h-7 object-contain"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span className="text-xs font-bold text-gray-400">
+                    {event.match_data.home_team.charAt(0)}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] font-bold text-gray-400 px-0.5">v</span>
+              <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden">
+                {event.match_data.away_team_logo ? (
+                  <img
+                    src={event.match_data.away_team_logo}
+                    alt=""
+                    className="w-7 h-7 object-contain"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span className="text-xs font-bold text-gray-400">
+                    {event.match_data.away_team.charAt(0)}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
         {/* Price Badge */}
         {event.lowest_price !== null && (

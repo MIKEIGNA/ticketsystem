@@ -181,6 +181,29 @@
             color: #6b7280;
             margin-top: 10px;
         }
+
+        .manual-code {
+            margin-top: 12px;
+            text-align: center;
+            font-size: 10px;
+            color: #374151;
+        }
+
+        .manual-code-label {
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-size: 9px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .manual-code-value {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            font-weight: bold;
+            color: #111827;
+            letter-spacing: 0.04em;
+        }
         
         .info-section {
             background-color: #f9fafb;
@@ -322,6 +345,10 @@
                         <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code" class="qr-code">
                     </div>
                     <div class="qr-instruction">Scan at entrance for quick check-in</div>
+                    <div class="manual-code">
+                        <div class="manual-code-label">Manual check-in code</div>
+                        <div class="manual-code-value">{{ ticket.security_code }}</div>
+                    </div>
                 </div>
                 
                 <div class="info-section">
@@ -340,7 +367,7 @@
                                 Booked on {{ ticket.created_at|date:"M d, Y" }}
                             </td>
                             <td class="footer-right">
-                                TicketHub
+                                brightpassticket
                             </td>
                         </tr>
                     </table>

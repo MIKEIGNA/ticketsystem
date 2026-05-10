@@ -1,8 +1,8 @@
-package com.tickethub.data.repository
+package com.brightpassticket.data.repository
 
-import com.tickethub.api.ApiService
-import com.tickethub.data.model.Payment
-import com.tickethub.data.model.PaymentRequest
+import com.brightpassticket.api.ApiService
+import com.brightpassticket.data.model.Payment
+import com.brightpassticket.data.model.PaymentRequest
 import javax.inject.Inject
 import javax.inject.Singleton
 

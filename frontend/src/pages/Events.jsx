@@ -17,6 +17,8 @@ const Events = () => {
     min_price: searchParams.get('min_price') || '',
     max_price: searchParams.get('max_price') || '',
     city: searchParams.get('city') || '',
+    date_from: searchParams.get('date_from') || '',
+    date_to: searchParams.get('date_to') || '',
   });
 
   useEffect(() => {
@@ -62,6 +64,8 @@ const Events = () => {
       min_price: '',
       max_price: '',
       city: '',
+      date_from: '',
+      date_to: '',
     });
     setSearchParams(new URLSearchParams());
   };
@@ -118,6 +122,9 @@ const Events = () => {
             >
               <option value="upcoming">Upcoming</option>
               <option value="today">Today</option>
+              <option value="this_week">This Week</option>
+              <option value="this_month">This Month</option>
+              <option value="custom">Custom Range</option>
               <option value="finished">Past Events</option>
             </select>
           </div>
@@ -156,6 +163,25 @@ const Events = () => {
               <option value="Kisumu">Kisumu</option>
               <option value="Nakuru">Nakuru</option>
             </select>
+
+            {/* Custom Date Range */}
+            {filters.filter === 'custom' && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={filters.date_from}
+                  onChange={(e) => updateFilter('date_from', e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
+                />
+                <span className="text-gray-400">to</span>
+                <input
+                  type="date"
+                  value={filters.date_to}
+                  onChange={(e) => updateFilter('date_to', e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
+                />
+              </div>
+            )}
 
             {/* Clear Filters */}
             {activeFiltersCount > 0 && (

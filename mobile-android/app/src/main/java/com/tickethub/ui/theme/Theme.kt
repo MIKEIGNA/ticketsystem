@@ -1,4 +1,4 @@
-package com.tickethub.ui.theme
+package com.brightpassticket.ui.theme
 
 import android.app.Activity
 import android.os.Build
@@ -44,7 +44,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun TicketHubTheme(
+fun brightpassticketTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit

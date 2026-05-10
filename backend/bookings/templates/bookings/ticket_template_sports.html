@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Match pass — {{ event.title }}</title>
+    <style>
+        @page {
+            size: 297mm 120mm;
+            margin: 10mm;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #e5e7eb;
+            color: #0f172a;
+        }
+        .shell {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+        .left-panel {
+            width: 26%;
+            vertical-align: top;
+            background: #ffffff;
+            padding: 16px 12px 16px 16px;
+            border-right: 2px dashed #e2e8f0;
+        }
+        .right-panel {
+            width: 74%;
+            vertical-align: top;
+            background: #ffffff;
+            padding: 0;
+        }
+        .qr-wrap {
+            text-align: center;
+            padding: 8px 0 12px 0;
+        }
+        .qr-wrap img {
+            width: 140px;
+            height: 140px;
+        }
+        .security-box {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 8px;
+            text-align: center;
+        }
+        .security-title {
+            font-size: 8px;
+            letter-spacing: 0.12em;
+            color: #64748b;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .security-code {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 13px;
+            font-weight: bold;
+            color: #0f172a;
+            letter-spacing: 0.06em;
+        }
+        .header-bar {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 10px 14px 8px 14px;
+        }
+        .header-top {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .header-logo-cell {
+            width: 36px;
+            vertical-align: middle;
+        }
+        .header-logo-cell img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+        .header-titles {
+            vertical-align: middle;
+            padding-left: 10px;
+        }
+        .pass-title {
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 0.14em;
+            color: #fbbf24;
+        }
+        .venue-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-top: 2px;
+        }
+        .access-row {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .gate-cell {
+            background: #fbbf24;
+            color: #0f172a;
+            font-weight: bold;
+            font-size: 11px;
+            padding: 8px 12px;
+            width: 28%;
+        }
+        .section-cell {
+            background: #0f172a;
+            color: #fbbf24;
+            font-size: 9px;
+            font-weight: bold;
+            letter-spacing: 0.06em;
+            padding: 8px 12px;
+        }
+        .match-area {
+            padding: 14px 16px 10px 16px;
+            background: #f8fafc;
+        }
+        .match-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+        .team-logo {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+        .team-logo-fallback {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto;
+            border-radius: 50%;
+            background: #e2e8f0;
+            border: 2px solid #cbd5e1;
+            font-size: 22px;
+            font-weight: bold;
+            color: #475569;
+            text-align: center;
+            line-height: 60px;
+        }
+        .team-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #0f172a;
+            margin-top: 6px;
+            max-width: 120px;
+        }
+        .vs-cell {
+            vertical-align: middle;
+            padding: 0 8px;
+        }
+        .vs-text {
+            font-size: 22px;
+            font-weight: bold;
+            color: #cbd5e1;
+        }
+        .vs-sub {
+            font-size: 8px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .holder-bar {
+            background: #fef9c3;
+            border-top: 1px solid #fde047;
+            border-bottom: 1px solid #fde047;
+            padding: 10px 16px;
+            font-size: 10px;
+            color: #422006;
+        }
+        .holder-bar strong {
+            color: #0f172a;
+        }
+        .rules {
+            padding: 10px 16px 8px 20px;
+            font-size: 9px;
+            color: #b91c1c;
+            line-height: 1.45;
+        }
+        .rules li {
+            margin-bottom: 4px;
+        }
+        .footer-bar {
+            background: #fbbf24;
+            color: #0f172a;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 8px 14px;
+            text-align: center;
+            letter-spacing: 0.04em;
+        }
+        .footer-brand {
+            padding: 6px 14px 10px 14px;
+            font-size: 8px;
+            color: #64748b;
+        }
+        .footer-brand-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .org-name {
+            text-align: right;
+            font-weight: bold;
+            color: #334155;
+            letter-spacing: 0.04em;
+        }
+    </style>
+</head>
+<body>
+    <table class="shell" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="left-panel">
+                <div class="qr-wrap">
+                    <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR"/>
+                </div>
+                <div class="security-box">
+                    <div class="security-title">MANUAL CHECK-IN CODE</div>
+                    <div class="security-code">{{ ticket.security_code }}</div>
+                    <div style="font-size:7px;color:#64748b;margin-top:6px;line-height:1.3;">If the QR cannot be scanned, enter this code at the gate. It matches this ticket&apos;s QR data.</div>
+                </div>
+            </td>
+            <td class="right-panel">
+                <div class="header-bar">
+                    <table class="header-top">
+                        <tr>
+                            <td class="header-logo-cell">
+                                {% if fkf_logo_data_uri %}
+                                <img src="{{ fkf_logo_data_uri }}" alt=""/>
+                                {% endif %}
+                            </td>
+                            <td class="header-titles">
+                                <div class="pass-title">OFFICIAL MATCH PASS</div>
+                                <div class="venue-title">{{ stadium_line }}</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <table class="access-row" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="gate-cell">{{ gate_label }}</td>
+                        <td class="section-cell">{{ section_access }}</td>
+                    </tr>
+                </table>
+                <div class="match-area">
+                    <table class="match-table">
+                        <tr>
+                            <td style="width: 38%; vertical-align: top;">
+                                {% if home_team_logo_data_uri %}
+                                <img class="team-logo" src="{{ home_team_logo_data_uri }}" alt=""/>
+                                {% else %}
+                                <div class="team-logo-fallback">{{ home_team_initial }}</div>
+                                {% endif %}
+                                <div class="team-name">{{ home_team }}</div>
+                            </td>
+                            <td class="vs-cell" style="width: 24%;">
+                                <div class="vs-text">VS</div>
+                                {% if league_category %}
+                                <div class="vs-sub">{{ league_category }} CATEGORY</div>
+                                {% endif %}
+                            </td>
+                            <td style="width: 38%; vertical-align: top;">
+                                {% if away_team_logo_data_uri %}
+                                <img class="team-logo" src="{{ away_team_logo_data_uri }}" alt=""/>
+                                {% else %}
+                                <div class="team-logo-fallback">{{ away_team_initial }}</div>
+                                {% endif %}
+                                <div class="team-name">{{ away_team }}</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="holder-bar">
+                    <strong>Holder:</strong> {{ attendee_name }}
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    <strong>Phone:</strong> {{ attendee_phone }}
+                </div>
+                <ul class="rules">
+                    <li>The ticket is not transferrable / cannot be reshared</li>
+                    <li>Present the ticket at the gate for scanning</li>
+                </ul>
+                <table class="footer-brand-table">
+                    <tr>
+                        <td></td>
+                        <td class="org-name">{{ organizer_display }}</td>
+                    </tr>
+                </table>
+                <div class="footer-bar">
+                    {{ tier_admission_label }} — KES {{ ticket.price_paid }} | {{ event.start_datetime|date:"d M Y"|upper }}
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

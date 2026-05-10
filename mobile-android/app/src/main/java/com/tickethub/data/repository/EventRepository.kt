@@ -1,8 +1,8 @@
-package com.tickethub.data.repository
+package com.brightpassticket.data.repository
 
-import com.tickethub.api.ApiService
-import com.tickethub.data.model.Category
-import com.tickethub.data.model.Event
+import com.brightpassticket.api.ApiService
+import com.brightpassticket.data.model.Category
+import com.brightpassticket.data.model.Event
 import javax.inject.Inject
 import javax.inject.Singleton
 

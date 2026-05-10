@@ -1,10 +1,10 @@
-package com.tickethub
+package com.brightpassticket
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class TicketHubApplication : Application() {
+class brightpassticketApplication : Application() {
     override fun onCreate() {
         super.onCreate()
     }

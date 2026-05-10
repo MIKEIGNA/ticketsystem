@@ -1,4 +1,4 @@
-package com.tickethub.data.model
+package com.brightpassticket.data.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
@@ -72,8 +72,26 @@ data class MatchData(
     val awayTeam: String,
     val homeTeamLogo: String?,
     val awayTeamLogo: String?,
+    val homeTeamPrimaryColor: String?,
+    val homeTeamSecondaryColor: String?,
+    val awayTeamPrimaryColor: String?,
+    val awayTeamSecondaryColor: String?,
     val category: String,
-    val stadium: String
+    val stadium: String,
+    val branding: MatchBranding? = null
+) : Parcelable
+
+@Parcelize
+data class MatchBranding(
+    val fkf: SponsorInfo?,
+    val sponsor: SponsorInfo?
+) : Parcelable
+
+@Parcelize
+data class SponsorInfo(
+    val name: String,
+    val logo: String?,
+    val colors: Map<String, String>?
 ) : Parcelable
 
 // Event

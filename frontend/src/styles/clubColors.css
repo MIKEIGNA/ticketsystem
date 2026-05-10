@@ -1,0 +1,249 @@
+/* FKF League Branding Colors */
+:root {
+  /* FKF Federation Colors */
+  --fkf-red: #DC3232;
+  --fkf-black: #000000;
+  --fkf-green: #43A047;
+  
+  /* SportPesa Title Sponsor */
+  --sportpesa-blue: #0059B3;
+  --sportpesa-white: #FFFFFF;
+}
+
+/* Club Color Themes */
+
+/* Gor Mahia - Green & White */
+.gor-mahia-theme {
+  --club-primary: #008000;
+  --club-secondary: #FFFFFF;
+  --club-accent: #006400;
+}
+
+/* AFC Leopards - Blue & White */
+.afc-leopards-theme {
+  --club-primary: #0000FF;
+  --club-secondary: #FFFFFF;
+  --club-accent: #0000CC;
+}
+
+/* Tusker FC - Yellow & Black */
+.tusker-theme {
+  --club-primary: #FFFF00;
+  --club-secondary: #000000;
+  --club-accent: #FFD700;
+}
+
+/* KCB FC - Green & Gold */
+.kcb-theme {
+  --club-primary: #006837;
+  --club-secondary: #FFD700;
+  --club-accent: #004d29;
+}
+
+/* Ulinzi Stars - Red & White */
+.ulinzi-theme {
+  --club-primary: #ED1C24;
+  --club-secondary: #FFFFFF;
+  --club-accent: #C41820;
+}
+
+/* Bandari FC - Blue & Yellow */
+.bandari-theme {
+  --club-primary: #004A99;
+  --club-secondary: #FDB913;
+  --club-accent: #003a7a;
+}
+
+/* Kenya Police FC - Red & Blue */
+.kenya-police-theme {
+  --club-primary: #CE1126;
+  --club-secondary: #0033A0;
+  --club-accent: #A50E1F;
+}
+
+/* Shabana FC - Red & White */
+.shabana-theme {
+  --club-primary: #FF0000;
+  --club-secondary: #FFFFFF;
+  --club-accent: #CC0000;
+}
+
+/* Posta Rangers - Red & White */
+.posta-rangers-theme {
+  --club-primary: #E31E24;
+  --club-secondary: #FFFFFF;
+  --club-accent: #B8181D;
+}
+
+/* Kariobangi Sharks - Green & Black */
+.sharks-theme {
+  --club-primary: #43A047;
+  --club-secondary: #000000;
+  --club-accent: #357a38;
+}
+
+/* Mathare United - Red & Black */
+.mathare-theme {
+  --club-primary: #DC3232;
+  --club-secondary: #000000;
+  --club-accent: #B82828;
+}
+
+/* Murang'a SEAL - Red & White */
+.muranga-seal-theme {
+  --club-primary: #DC3232;
+  --club-secondary: #FFFFFF;
+  --club-accent: #B82828;
+}
+
+/* Kakamega Homeboyz - Blue & White */
+.homeboyz-theme {
+  --club-primary: #0059B3;
+  --club-secondary: #FFFFFF;
+  --club-accent: #00478f;
+}
+
+/* Sofapaka FC - Blue & White */
+.sofapaka-theme {
+  --club-primary: #0059B3;
+  --club-secondary: #FFFFFF;
+  --club-accent: #00478f;
+}
+
+/* Bidco United - Green & White */
+.bidco-theme {
+  --club-primary: #43A047;
+  --club-secondary: #FFFFFF;
+  --club-accent: #357a38;
+}
+
+/* Nairobi United - Blue & White */
+.nairobi-united-theme {
+  --club-primary: #0059B3;
+  --club-secondary: #FFFFFF;
+  --club-accent: #00478f;
+}
+
+/* Mara Sugar FC - Green & White */
+.mara-sugar-theme {
+  --club-primary: #43A047;
+  --club-secondary: #FFFFFF;
+  --club-accent: #357a38;
+}
+
+/* APS Bomet - Red & White */
+.aps-bomet-theme {
+  --club-primary: #DC3232;
+  --club-secondary: #FFFFFF;
+  --club-accent: #B82828;
+}
+
+/* FKF League Badge */
+.fkf-badge {
+  background: linear-gradient(135deg, var(--fkf-red) 0%, var(--fkf-black) 50%, var(--fkf-green) 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* SportPesa Badge */
+.sportpesa-badge {
+  background-color: var(--sportpesa-blue);
+  color: var(--sportpesa-white);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+/* Category A Badge (Top-tier) */
+.category-a-badge {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  color: #000;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Category B Badge (Mid-tier) */
+.category-b-badge {
+  background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%);
+  color: #000;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Category C Badge (Standard) */
+.category-c-badge {
+  background: linear-gradient(135deg, #CD7F32 0%, #A0522D 100%);
+  color: #FFF;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Team Logo Container */
+.team-logo-container {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.team-logo-container img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+/* Match Card with Club Colors */
+.match-card {
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.match-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* Home Team Border Accent */
+.match-card.home-team-gor-mahia {
+  border-left-color: var(--club-primary, #008000);
+  border-left-width: 4px;
+}
+
+.match-card.home-team-afc-leopards {
+  border-left-color: var(--club-primary, #0000FF);
+  border-left-width: 4px;
+}
+
+.match-card.home-team-tusker {
+  border-left-color: var(--club-primary, #FFFF00);
+  border-left-width: 4px;
+}
+
+/* VS Badge */
+.vs-badge {
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+}

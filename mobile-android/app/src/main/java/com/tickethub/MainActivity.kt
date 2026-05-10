@@ -1,4 +1,4 @@
-package com.tickethub
+package com.brightpassticket
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -20,24 +20,24 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.tickethub.navigation.Screen
-import com.tickethub.ui.screens.auth.LoginScreen
-import com.tickethub.ui.screens.auth.RegisterScreen
-import com.tickethub.ui.screens.auth.SplashScreen
-import com.tickethub.ui.screens.booking.BookingScreen
-import com.tickethub.ui.screens.booking.PaymentScreen
-import com.tickethub.ui.screens.booking.BookingSuccessScreen
-import com.tickethub.ui.screens.events.EventDetailScreen
-import com.tickethub.ui.screens.events.EventsScreen
-import com.tickethub.ui.screens.events.SearchScreen
-import com.tickethub.ui.screens.home.HomeScreen
-import com.tickethub.ui.screens.organizer.OrganizerDashboardScreen
-import com.tickethub.ui.screens.organizer.CheckInScreen
-import com.tickethub.ui.screens.profile.ProfileScreen
-import com.tickethub.ui.screens.tickets.MyTicketsScreen
-import com.tickethub.ui.screens.tickets.TicketDetailScreen
-import com.tickethub.ui.theme.TicketHubTheme
-import com.tickethub.ui.viewmodel.AuthViewModel
+import com.brightpassticket.navigation.Screen
+import com.brightpassticket.ui.screens.auth.LoginScreen
+import com.brightpassticket.ui.screens.auth.RegisterScreen
+import com.brightpassticket.ui.screens.auth.SplashScreen
+import com.brightpassticket.ui.screens.booking.BookingScreen
+import com.brightpassticket.ui.screens.booking.PaymentScreen
+import com.brightpassticket.ui.screens.booking.BookingSuccessScreen
+import com.brightpassticket.ui.screens.events.EventDetailScreen
+import com.brightpassticket.ui.screens.events.EventsScreen
+import com.brightpassticket.ui.screens.events.SearchScreen
+import com.brightpassticket.ui.screens.home.HomeScreen
+import com.brightpassticket.ui.screens.organizer.OrganizerDashboardScreen
+import com.brightpassticket.ui.screens.organizer.CheckInScreen
+import com.brightpassticket.ui.screens.profile.ProfileScreen
+import com.brightpassticket.ui.screens.tickets.MyTicketsScreen
+import com.brightpassticket.ui.screens.tickets.TicketDetailScreen
+import com.brightpassticket.ui.theme.brightpassticketTheme
+import com.brightpassticket.ui.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            TicketHubTheme {
+            brightpassticketTheme {
                 MainApp(authViewModel)
             }
         }

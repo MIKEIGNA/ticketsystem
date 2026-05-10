@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Checkout from './pages/Checkout';
 import MyTickets from './pages/MyTickets';
+import TicketDetail from './pages/TicketDetail';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -45,6 +46,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MyTickets />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="tickets/:ticketNumber"
+              element={
+                <ProtectedRoute>
+                  <TicketDetail />
                 </ProtectedRoute>
               }
             />

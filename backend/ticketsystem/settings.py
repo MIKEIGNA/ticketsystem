@@ -6,6 +6,7 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 load_dotenv()
 
@@ -22,6 +23,38 @@ SECRET_KEY = "django-insecure-uo1fxtelblki1n)=jrb!f$l%5&88va!6akmsq5cy6^m_u@!gk$
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
+# TheSportsDB API v1 — https://www.thesportsdb.com/documentation
+THESPORTSDB_API_KEY = os.getenv("THESPORTSDB_API_KEY", "123")
+# v2: header X-API-KEY — https://www.thesportsdb.com/api/v2/json (see Postman collection in repo root)
+THESPORTSDB_V2_API_KEY = os.getenv("THESPORTSDB_V2_API_KEY", THESPORTSDB_API_KEY)
+THESPORTSDB_V2_LEAGUE_ID = os.getenv("THESPORTSDB_V2_LEAGUE_ID", "4745")
+THESPORTSDB_V2_SEASON = os.getenv("THESPORTSDB_V2_SEASON", "")
+
+# Celery — use Redis for broker (see requirements.txt)
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
+
+CELERY_BEAT_SCHEDULE = {
+    "sync-kpl-thesportsdb-incremental": {
+        "task": "events.tasks.sync_kpl_thesportsdb_incremental",
+        "schedule": timedelta(hours=int(os.getenv("KPL_SYNC_INTERVAL_HOURS", "4"))),
+    },
+    "sync-kpl-thesportsdb-full": {
+        "task": "events.tasks.sync_kpl_thesportsdb_full",
+        "schedule": crontab(
+            hour=int(os.getenv("KPL_FULL_SYNC_HOUR_UTC", "3")),
+            minute=int(os.getenv("KPL_FULL_SYNC_MINUTE_UTC", "0")),
+        ),
+    },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "ticketsystem-cache",
+    }
+}
 
 
 # Application definition
@@ -95,7 +128,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+        "rest_framework.permissions.AllowAny",  # Changed to AllowAny for public access
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
@@ -161,6 +194,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
+
+CELERY_TIMEZONE = TIME_ZONE
 
 USE_I18N = True
 

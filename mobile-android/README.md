@@ -1,6 +1,6 @@
-# TicketHub Android App
+# brightpassticket Android App
 
-A modern Android mobile application for the TicketHub ticketing system, built with Kotlin and Jetpack Compose.
+A modern Android mobile application for the brightpassticket ticketing system, built with Kotlin and Jetpack Compose.
 
 ## Features
 
@@ -34,7 +34,7 @@ A modern Android mobile application for the TicketHub ticketing system, built wi
 ## Project Structure
 
 ```
-app/src/main/java/com/tickethub/
+app/src/main/java/com/brightpassticket/
 ├── api/                    # API service and networking
 │   ├── ApiService.kt      # Retrofit API definitions
 │   ├── RetrofitClient.kt  # HTTP client configuration
@@ -141,7 +141,7 @@ MIT License - see LICENSE file for details
 
 ## Support
 
-For support, email support@tickethub.co.ke or join our Slack channel.
+For support, email support@brightpassticket.co.ke or join our Slack channel.
 
 
 
@@ -157,13 +157,13 @@ I'll create a modern Android mobile app using Kotlin with Jetpack Compose. Let m
 
 **Mobile Android app created!** Here's a summary of what I've built:
 
-## 🎫 TicketHub Android App
+## 🎫 brightpassticket Android App
 
 ### Project Structure:
 ```
 mobile-android/
 ├── app/
-│   ├── src/main/java/com/tickethub/
+│   ├── src/main/java/com/brightpassticket/
 │   │   ├── api/                 # Retrofit API service
 │   │   ├── data/model/          # Data models
 │   │   ├── data/repository/     # Repository layer
@@ -181,7 +181,7 @@ mobile-android/
 │   │   │   ├── theme/           # Material Design 3 theme
 │   │   │   └── viewmodel/       # ViewModels
 │   │   ├── MainActivity.kt      # Entry point
-│   │   └── TicketHubApplication.kt
+│   │   └── brightpassticketApplication.kt
 │   ├── build.gradle.kts         # Dependencies
 │   └── AndroidManifest.xml
 ├── build.gradle.kts
@@ -218,15 +218,15 @@ mobile-android/
 
 | File | Purpose |
 |------|---------|
-| [ApiService.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/tickethub/api/ApiService.kt:0:0-0:0) | All API endpoint definitions |
-| [TokenManager.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/tickethub/api/TokenManager.kt:0:0-0:0) | JWT authentication handling |
-| [AuthRepository.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/tickethub/data/repository/AuthRepository.kt:0:0-0:0) | Login/register logic |
-| [EventRepository.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/tickethub/data/repository/EventRepository.kt:0:0-0:0) | Events data layer |
-| [BookingRepository.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/tickethub/data/repository/BookingRepository.kt:0:0-0:0) | Bookings & tickets |
-| [Navigation.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/tickethub/navigation/Navigation.kt:0:0-0:0) | App navigation routes |
-| [MainActivity.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/tickethub/MainActivity.kt:0:0-0:0) | Main app with bottom nav |
-| [SplashScreen.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/tickethub/ui/screens/auth/SplashScreen.kt:0:0-0:0) | App launch screen |
-| [AuthViewModel.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/tickethub/ui/viewmodel/AuthViewModel.kt:0:0-0:0) | Authentication state |
+| [ApiService.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/brightpassticket/api/ApiService.kt:0:0-0:0) | All API endpoint definitions |
+| [TokenManager.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/brightpassticket/api/TokenManager.kt:0:0-0:0) | JWT authentication handling |
+| [AuthRepository.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/brightpassticket/data/repository/AuthRepository.kt:0:0-0:0) | Login/register logic |
+| [EventRepository.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/brightpassticket/data/repository/EventRepository.kt:0:0-0:0) | Events data layer |
+| [BookingRepository.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/brightpassticket/data/repository/BookingRepository.kt:0:0-0:0) | Bookings & tickets |
+| [Navigation.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/brightpassticket/navigation/Navigation.kt:0:0-0:0) | App navigation routes |
+| [MainActivity.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/brightpassticket/MainActivity.kt:0:0-0:0) | Main app with bottom nav |
+| [SplashScreen.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/brightpassticket/ui/screens/auth/SplashScreen.kt:0:0-0:0) | App launch screen |
+| [AuthViewModel.kt](cci:7://file:///c:/Users/Jovi/Documents/ticketsystem/mobile-android/app/src/main/java/com/brightpassticket/ui/viewmodel/AuthViewModel.kt:0:0-0:0) | Authentication state |
 
 ### 🛠️ To Complete:
 

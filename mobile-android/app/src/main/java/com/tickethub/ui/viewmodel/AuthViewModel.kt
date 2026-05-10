@@ -1,9 +1,9 @@
-package com.tickethub.ui.viewmodel
+package com.brightpassticket.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tickethub.data.model.User
-import com.tickethub.data.repository.AuthRepository
+import com.brightpassticket.data.model.User
+import com.brightpassticket.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

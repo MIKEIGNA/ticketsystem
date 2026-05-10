@@ -1,6 +1,6 @@
-package com.tickethub.api
+package com.brightpassticket.api
 
-import com.tickethub.BuildConfig
+import com.brightpassticket.BuildConfig
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor

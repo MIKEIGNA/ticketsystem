@@ -32,7 +32,7 @@ const Header = () => {
             <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
               <Ticket className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">TicketHub</span>
+            <span className="text-xl font-bold text-gray-900">brightpassticket</span>
           </Link>
 
           {/* Desktop Navigation */}

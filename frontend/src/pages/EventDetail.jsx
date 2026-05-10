@@ -7,6 +7,7 @@ import {
   Check, Share2, Heart, ChevronRight, Ticket
 } from 'lucide-react';
 import { cn } from '../utils/cn';
+import '../styles/clubColors.css';
 
 const EventDetail = () => {
   const { slug } = useParams();
@@ -176,7 +177,19 @@ const EventDetail = () => {
             {/* Match Info - Only for sports events with match_data */}
             {event.match_data?.home_team && event.match_data?.away_team && (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Match Info</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-gray-900">Match Info</h2>
+                  <div className="flex gap-2">
+                    {/* FKF Badge */}
+                    <span className="fkf-badge">FKF</span>
+                    {/* SportPesa Badge */}
+                    <span className="sportpesa-badge">SportPesa</span>
+                    {/* Category Badge */}
+                    <span className={`category-${event.match_data.category?.toLowerCase()}-badge`}>
+                      {event.match_data.category} Category
+                    </span>
+                  </div>
+                </div>
                 <div className="flex items-center justify-center gap-4 py-4">
                   {/* Home Team */}
                   <div className="flex flex-col items-center">
@@ -186,6 +199,7 @@ const EventDetail = () => {
                           src={event.match_data.home_team_logo}
                           alt={event.match_data.home_team}
                           className="w-16 h-16 object-contain"
+                          referrerPolicy="no-referrer"
                         />
                       ) : (
                         <div className="text-2xl font-bold text-gray-400">
@@ -211,6 +225,7 @@ const EventDetail = () => {
                           src={event.match_data.away_team_logo}
                           alt={event.match_data.away_team}
                           className="w-16 h-16 object-contain"
+                          referrerPolicy="no-referrer"
                         />
                       ) : (
                         <div className="text-2xl font-bold text-gray-400">

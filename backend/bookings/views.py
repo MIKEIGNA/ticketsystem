@@ -1,3 +1,5 @@
+from typing import Optional
+
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,6 +15,33 @@ from .serializers import (
     TicketSerializer
 )
 from .ticket_generator import generate_ticket_pdf
+from .security_code import normalize_security_code
+
+
+def resolve_ticket_for_gate(identifier: str) -> Optional[Ticket]:
+    """Resolve a ticket from raw QR text, manual security code, or ticket number."""
+    identifier = (identifier or "").strip()
+    if not identifier:
+        return None
+    qs = Ticket.objects.select_related(
+        "booking__event",
+        "ticket_tier",
+        "booking__event__organizer",
+    )
+    try:
+        return qs.get(qr_code_data=identifier)
+    except Ticket.DoesNotExist:
+        pass
+    norm = normalize_security_code(identifier)
+    if norm:
+        try:
+            return qs.get(security_code=norm)
+        except Ticket.DoesNotExist:
+            pass
+    try:
+        return qs.get(ticket_number=identifier)
+    except Ticket.DoesNotExist:
+        return None
 
 
 class BookingListView(generics.ListCreateAPIView):
@@ -29,6 +58,21 @@ class BookingListView(generics.ListCreateAPIView):
         if self.request.method == 'POST':
             return BookingCreateSerializer
         return BookingListSerializer
+    
+    def create(self, request, *args, **kwargs):
+        """Override create to return full booking with tickets after creation"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Set user if authenticated, otherwise None (guest checkout)
+        user = request.user if request.user.is_authenticated else None
+        
+        # Create booking
+        booking = serializer.save(user=user)
+        
+        # Return full booking with tickets using BookingSerializer
+        output_serializer = BookingSerializer(booking)
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
@@ -74,12 +118,18 @@ class TicketDetailView(generics.RetrieveAPIView):
 
 
 class CheckInTicketView(APIView):
-    """APIView for ticket check-in at venue"""
+    """Check in by ticket number, manual security code (XXXX-…), or raw QR string."""
+
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, ticket_number):
-        ticket = get_object_or_404(Ticket, ticket_number=ticket_number)
-        
+        ticket = resolve_ticket_for_gate(ticket_number)
+        if not ticket:
+            return Response(
+                {"error": "Ticket not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         # Only organizers and staff can check in tickets
         if not (request.user.is_staff or 
                 request.user == ticket.booking.event.organizer):
@@ -105,19 +155,24 @@ class CheckInTicketView(APIView):
 
 
 class ValidateTicketView(APIView):
-    """APIView for validating ticket by QR code data"""
+    """Validate ticket by scanned QR payload (qr_data) or typed security_code."""
+
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        qr_data = request.data.get('qr_data')
-        
-        if not qr_data:
+        raw = request.data.get("qr_data") or request.data.get("security_code")
+        if not raw:
             return Response(
-                {'error': 'QR code data required'},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "qr_data or security_code required"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
-        ticket = get_object_or_404(Ticket, qr_code_data=qr_data)
+
+        ticket = resolve_ticket_for_gate(raw)
+        if not ticket:
+            return Response(
+                {"error": "Ticket not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         
         # Check permissions
         if not (request.user.is_staff or 
@@ -143,8 +198,18 @@ class TicketDownloadView(APIView):
     
     def get(self, request, ticket_number):
         """Download ticket PDF - accessible by ticket owner or anyone with the link (guest tickets)"""
-        ticket = get_object_or_404(Ticket, ticket_number=ticket_number)
-        
+        ticket = get_object_or_404(
+            Ticket.objects.select_related(
+                'booking',
+                'ticket_tier',
+                'booking__event',
+                'booking__event__category',
+                'booking__event__venue',
+                'booking__event__organizer',
+            ),
+            ticket_number=ticket_number,
+        )
+
         # Allow download if:
         # 1. User is authenticated and owns the booking
         # 2. Guest checkout (no user) - anyone with the ticket number can download

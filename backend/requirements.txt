@@ -5,6 +5,7 @@ django-cors-headers>=4.4
 django-filter>=24.0
 Pillow>=11.0
 requests>=2.32
+beautifulsoup4>=4.12
 python-decouple>=3.8
 redis>=5.0
 celery>=5.4

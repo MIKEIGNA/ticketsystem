@@ -15,9 +15,10 @@ class TicketSerializer(serializers.ModelSerializer):
         fields = ['id', 'ticket_number', 'ticket_tier', 'ticket_tier_name',
                   'price_paid', 'status', 'attendee_name', 'attendee_email',
                   'attendee_phone', 'seat_number', 'qr_code_url', 'qr_code_data',
+                  'security_code',
                   'checked_in', 'checked_in_at', 'event_title', 'event_date',
                   'venue_name', 'created_at']
-        read_only_fields = ['ticket_number', 'qr_code', 'qr_code_data', 'checked_in_at']
+        read_only_fields = ['ticket_number', 'qr_code', 'qr_code_data', 'security_code', 'checked_in_at']
     
     def get_qr_code_url(self, obj):
         if obj.qr_code:
@@ -91,15 +92,18 @@ class BookingCreateSerializer(serializers.ModelSerializer):
             total_amount += tier.price
         
         # Create booking - user may be None for guest checkout
+        # AUTO-CONFIRM FOR TESTING: Skip payment verification
         booking = Booking.objects.create(
             user=user,  # Set user here, can be None for guests
             event=event,
             total_amount=total_amount,
             ticket_count=ticket_count,
+            status='confirmed',  # Auto-confirm for testing (bypass payment)
             **validated_data
         )
         
         # Create tickets
+        created_tickets = []
         for ticket_data in tickets_data:
             tier_id = ticket_data.pop('ticket_tier_id')
             tier = TicketTier.objects.get(id=tier_id)
@@ -108,13 +112,17 @@ class BookingCreateSerializer(serializers.ModelSerializer):
             tier.available_quantity -= 1
             tier.save()
             
-            Ticket.objects.create(
+            ticket = Ticket.objects.create(
                 booking=booking,
                 ticket_tier=tier,
                 price_paid=tier.price,
                 **ticket_data
             )
+            created_tickets.append(ticket)
         
+        # Return booking with tickets
+        # Re-fetch booking to include related tickets
+        booking.refresh_from_db()
         return booking
 
 

@@ -192,7 +192,7 @@ const Home = () => {
             Ready to Experience Amazing Events?
           </h2>
           <p className="text-white/80 mb-8 max-w-2xl mx-auto">
-            Join thousands of event-goers who trust TicketHub for their ticketing needs.
+            Join thousands of event-goers who trust brightpassticket for their ticketing needs.
             Sign up today and never miss out on the best events in Kenya.
           </p>
           <div className="flex flex-wrap justify-center gap-4">

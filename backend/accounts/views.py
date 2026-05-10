@@ -49,7 +49,10 @@ class OrganizerListView(generics.ListAPIView):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    """Custom JWT login with additional user data"""
+    """Custom JWT Login view that returns user data along with tokens"""
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []  # No authentication required for login
+    
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:

@@ -1,9 +1,9 @@
-package com.tickethub.di
+package com.brightpassticket.di
 
 import android.content.Context
-import com.tickethub.api.RetrofitClient
-import com.tickethub.api.TokenManager
-import com.tickethub.api.ApiService
+import com.brightpassticket.api.RetrofitClient
+import com.brightpassticket.api.TokenManager
+import com.brightpassticket.api.ApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

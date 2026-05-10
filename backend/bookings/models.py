@@ -5,6 +5,8 @@ from django.db import models
 from django.utils import timezone
 from django.core.files.base import ContentFile
 
+from .security_code import build_security_code
+
 
 class Booking(models.Model):
     STATUS_CHOICES = [
@@ -92,6 +94,13 @@ class Ticket(models.Model):
     # QR Code
     qr_code = models.ImageField(upload_to='tickets/qr_codes/', blank=True, null=True)
     qr_code_data = models.TextField(blank=True, help_text="Data encoded in QR code")
+    security_code = models.CharField(
+        max_length=19,
+        blank=True,
+        db_index=True,
+        unique=True,
+        help_text="Manual check-in code (HMAC of qr_code_data); same ticket as QR scan",
+    )
     
     # Check-in
     checked_in = models.BooleanField(default=False)
@@ -112,6 +121,7 @@ class Ticket(models.Model):
             self.ticket_number = self.generate_ticket_number()
         if not self.qr_code_data:
             self.qr_code_data = f"TICKET:{self.ticket_number}:{self.booking.event.id}"
+        self.security_code = build_security_code(self.qr_code_data)
         super().save(*args, **kwargs)
         
         # Generate QR code after save

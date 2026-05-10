@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TicketHub"
+rootProject.name = "brightpassticket"
 include(":app")

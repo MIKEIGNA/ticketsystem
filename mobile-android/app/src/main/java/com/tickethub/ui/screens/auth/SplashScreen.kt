@@ -1,4 +1,4 @@
-package com.tickethub.ui.screens.auth
+package com.brightpassticket.ui.screens.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,10 +11,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.tickethub.ui.theme.PrimaryColor
-import com.tickethub.ui.theme.PrimaryDarkColor
-import com.tickethub.ui.theme.SecondaryColor
-import com.tickethub.ui.viewmodel.AuthViewModel
+import com.brightpassticket.ui.theme.PrimaryColor
+import com.brightpassticket.ui.theme.PrimaryDarkColor
+import com.brightpassticket.ui.theme.SecondaryColor
+import com.brightpassticket.ui.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 
 @Composable

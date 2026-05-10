@@ -74,7 +74,8 @@ const Checkout = () => {
       });
 
       setBooking(response.data);
-      setStep('payment');
+      // SKIP PAYMENT FOR TESTING: Go directly to success
+      setStep('success');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create booking');
     } finally {
@@ -273,7 +274,7 @@ const Checkout = () => {
                       
                       <div className="space-y-4">
                         {ticketDetails.map((ticket, index) => (
-                          <div key={index} className="border border-gray-200 rounded-lg p-4">
+                          <div key={`ticket-${index}`} className="border border-gray-200 rounded-lg p-4">
                             <div className="flex items-center gap-2 mb-3">
                               <Ticket className="w-4 h-4 text-primary-600" />
                               <h4 className="font-medium text-gray-900">Ticket #{index + 1}</h4>

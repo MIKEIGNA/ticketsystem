@@ -1,5 +1,17 @@
 from rest_framework import serializers
 from .models import Category, Venue, Event, TicketTier
+from .kpl_team_logos import enrich_match_data_logos
+
+
+class MatchDataLogoMixin:
+    """Attach KPL badge URLs to match_data when DB omitted them."""
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        md = data.get("match_data")
+        if md is not None:
+            data["match_data"] = enrich_match_data_logos(md)
+        return data
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -62,7 +74,7 @@ class TicketTierCreateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class EventSerializer(serializers.ModelSerializer):
+class EventSerializer(MatchDataLogoMixin, serializers.ModelSerializer):
     category = CategoryListSerializer(read_only=True)
     venue = VenueSerializer(read_only=True)
     ticket_tiers = TicketTierSerializer(many=True, read_only=True)
@@ -87,7 +99,7 @@ class EventSerializer(serializers.ModelSerializer):
         return None
 
 
-class EventListSerializer(serializers.ModelSerializer):
+class EventListSerializer(MatchDataLogoMixin, serializers.ModelSerializer):
     """Lightweight serializer for event listings"""
     category = CategoryListSerializer(read_only=True)
     venue_name = serializers.CharField(source='venue.name', read_only=True)
@@ -99,7 +111,7 @@ class EventListSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'slug', 'subtitle', 'category',
                   'venue_name', 'venue_city', 'start_datetime',
                   'poster_image', 'featured', 'status', 'lowest_price',
-                  'days_until_event']
+                  'days_until_event', 'match_data']
     
     def get_lowest_price(self, obj):
         tiers = obj.ticket_tiers.filter(is_active=True, available_quantity__gt=0)

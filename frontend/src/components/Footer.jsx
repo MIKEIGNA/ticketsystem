@@ -42,7 +42,7 @@ const Footer = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
                 <Ticket className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">TicketHub</span>
+              <span className="text-xl font-bold text-white">brightpassticket</span>
             </Link>
             <p className="text-sm text-gray-400 mb-6 max-w-xs">
               Kenya&apos;s trusted ticketing platform for events, concerts, sports matches, 
@@ -57,7 +57,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Mail className="w-4 h-4 text-primary-400" />
-                <span>support@tickethub.co.ke</span>
+                <span>support@brightpassticket.co.ke</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <MapPin className="w-4 h-4 text-primary-400" />
@@ -121,7 +121,7 @@ const Footer = () => {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-gray-500">
-            {currentYear} TicketHub. All rights reserved.
+            {currentYear} brightpassticket. All rights reserved.
           </p>
           
           {/* Social Links */}

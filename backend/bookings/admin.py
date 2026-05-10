@@ -83,7 +83,14 @@ class TicketAdmin(admin.ModelAdmin):
     list_display = ('ticket_number', 'booking_link', 'event_link', 'ticket_tier', 'attendee', 'status_badge', 'checked_in_status', 'created_at')
     list_filter = ('status', 'checked_in', 'created_at', 'ticket_tier__event__category')
     search_fields = ('ticket_number', 'attendee_name', 'attendee_email', 'booking__booking_number')
-    readonly_fields = ('ticket_number', 'qr_code', 'qr_code_data', 'created_at', 'updated_at')
+    readonly_fields = (
+        'ticket_number',
+        'security_code',
+        'qr_code',
+        'qr_code_data',
+        'created_at',
+        'updated_at',
+    )
     date_hierarchy = 'created_at'
     actions = ['mark_as_valid', 'mark_as_used', 'check_in_tickets']
     
@@ -98,7 +105,7 @@ class TicketAdmin(admin.ModelAdmin):
             'fields': ('checked_in', 'checked_in_at', 'checked_in_by')
         }),
         ('QR Code', {
-            'fields': ('qr_code', 'qr_code_data'),
+            'fields': ('qr_code', 'qr_code_data', 'security_code'),
             'classes': ('collapse',)
         }),
         ('Timestamps', {

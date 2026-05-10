@@ -1,8 +1,8 @@
-package com.tickethub.data.repository
+package com.brightpassticket.data.repository
 
-import com.tickethub.api.ApiService
-import com.tickethub.api.TokenManager
-import com.tickethub.data.model.*
+import com.brightpassticket.api.ApiService
+import com.brightpassticket.api.TokenManager
+import com.brightpassticket.data.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject

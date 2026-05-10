@@ -1,6 +1,6 @@
-package com.tickethub.api
+package com.brightpassticket.api
 
-import com.tickethub.data.model.*
+import com.brightpassticket.data.model.*
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*

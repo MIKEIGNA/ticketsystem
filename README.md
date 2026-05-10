@@ -1,4 +1,4 @@
-# TicketHub - Kenyan Event Ticketing Platform
+# brightpassticket - Kenyan Event Ticketing Platform
 
 A full-stack ticket booking system for events, sports, concerts, and more in Kenya. Built with Django REST Framework and React, featuring M-Pesa payment integration.
 
@@ -239,7 +239,7 @@ MIT License - Feel free to use for your projects!
 
 For issues or questions:
 - Create an issue in the repository
-- Contact: support@tickethub.co.ke
+- Contact: support@brightpassticket.co.ke
 
 ---
 

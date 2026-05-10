@@ -15,7 +15,11 @@ const MyTickets = () => {
     const fetchTickets = async () => {
       try {
         const response = await bookingService.getMyTickets();
-        setTickets(response.data);
+        console.log('Tickets response:', response.data);
+        // Paginated response has results array
+        const ticketsData = response.data.results || response.data;
+        console.log('First ticket:', ticketsData[0]);
+        setTickets(ticketsData);
       } catch (error) {
         console.error('Failed to fetch tickets:', error);
       } finally {
@@ -165,9 +169,11 @@ const TicketCard = ({ ticket, formatDate, getStatusIcon, getStatusText, isPast }
   const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
+    console.log('Starting download for ticket:', ticket.ticket_number);
     setDownloading(true);
     try {
       const response = await bookingService.downloadTicket(ticket.ticket_number);
+      console.log('Download response:', response);
       
       // Create a blob from the PDF data
       const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -181,9 +187,12 @@ const TicketCard = ({ ticket, formatDate, getStatusIcon, getStatusText, isPast }
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      
+      console.log('Download successful');
     } catch (error) {
       console.error('Failed to download ticket:', error);
-      alert('Failed to download ticket. Please try again.');
+      console.error('Error details:', error.response, error.message);
+      alert(`Failed to download ticket: ${error.message}. Please try again.`);
     } finally {
       setDownloading(false);
     }

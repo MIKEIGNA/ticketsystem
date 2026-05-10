@@ -1,4 +1,4 @@
-package com.tickethub.navigation
+package com.brightpassticket.navigation
 
 sealed class Screen(val route: String) {
     // Auth

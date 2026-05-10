@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.tickethub"
+    namespace = "com.brightpassticket"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.tickethub"
+        applicationId = "com.brightpassticket"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
