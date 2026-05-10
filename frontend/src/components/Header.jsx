@@ -15,8 +15,8 @@ const Header = () => {
   };
 
   const navLinks = [
-    { name: 'Events', href: '/events' },
-    { name: 'Categories', href: '/categories' },
+    // { name: 'Events', href: '/events' },
+    // { name: 'Categories', href: '/categories' },
   ];
 
   if (isAuthenticated) {
