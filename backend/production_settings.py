@@ -27,7 +27,7 @@ if not CORS_ALLOWED_ORIGINS:
 
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
 if not CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS = ['https://brightpassticket.web.app']
+    CSRF_TRUSTED_ORIGINS = ['https://brightpassticket.web.app', 'https://backendticketsystem-production.up.railway.app']
 
 # Database - Railway provides DATABASE_URL
 DATABASES = {
