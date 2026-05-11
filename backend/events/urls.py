@@ -11,7 +11,8 @@ from .views import (
     MyEventsView,
     TicketTierListView,
     TicketTierDetailView,
-    EventSearchView
+    EventSearchView,
+    ImportFixturesView
 )
 
 urlpatterns = [
@@ -29,6 +30,9 @@ urlpatterns = [
     path('my-events/', MyEventsView.as_view(), name='my-events'),
     path('search/', EventSearchView.as_view(), name='event-search'),
     path('<slug:slug>/', EventDetailView.as_view(), name='event-detail'),
+    
+    # Import Fixtures
+    path('import-fixtures/', ImportFixturesView.as_view(), name='import-fixtures'),
     
     # Ticket Tiers
     path('<uuid:event_id>/tiers/', TicketTierListView.as_view(), name='ticket-tier-list'),

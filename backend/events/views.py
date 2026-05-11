@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions, filters
+from rest_framework import generics, permissions, filters, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from django_filters import CharFilter
 from django.utils import timezone
 from django.db.models import Q, Min
+from django.core.management import call_command
 
 from .models import Category, Venue, Event, TicketTier
 from .serializers import (
@@ -256,4 +257,24 @@ class EventSearchView(APIView):
         
         serializer = EventListSerializer(events, many=True)
         return Response(serializer.data)
+
+
+# ==================== IMPORT FIXTURES VIEW ====================
+
+class ImportFixturesView(APIView):
+    """APIView to trigger import_fkf_fixtures management command"""
+    permission_classes = [permissions.AllowAny]  # Allow for testing, can restrict later
+
+    def post(self, request):
+        try:
+            call_command('import_fkf_fixtures')
+            return Response(
+                {'message': 'FKF fixtures imported successfully'},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to import fixtures: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
