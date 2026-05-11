@@ -6,6 +6,7 @@ Override these in railway environment variables or use this file.
 from .settings import *
 
 import os
+import dj_database_url
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -22,22 +23,19 @@ if not ALLOWED_HOSTS:
 # CORS settings for production
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
 if not CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS = ['https://your-firebase-app.web.app']
+    CORS_ALLOWED_ORIGINS = ['https://brightpassticket.web.app']
 
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
 if not CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS = ['https://your-firebase-app.web.app']
+    CSRF_TRUSTED_ORIGINS = ['https://brightpassticket.web.app']
 
-# Database - Railway uses PostgreSQL
+# Database - Railway provides DATABASE_URL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB'),
-        'USER': os.environ.get('POSTGRES_USER'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': os.environ.get('POSTGRES_HOST'),
-        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 # Static files - Using Whitenoise
