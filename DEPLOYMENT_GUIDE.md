@@ -236,6 +236,7 @@ This creates a `dist/` folder with production-ready files.
 ### Step 8: Deploy to Firebase
 
 ```bash
+firebase projects:list
 firebase deploy
 ```
 

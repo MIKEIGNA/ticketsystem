@@ -1,5 +1,6 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import format_html
+from django.core.management import call_command
 from .models import Category, Venue, Event, TicketTier
 
 
@@ -68,7 +69,7 @@ class EventAdmin(admin.ModelAdmin):
     date_hierarchy = 'start_datetime'
     inlines = [TicketTierInline]
     list_editable = ('featured',)
-    actions = ['make_published', 'make_draft', 'make_cancelled', 'duplicate_event']
+    actions = ['make_published', 'make_draft', 'make_cancelled', 'duplicate_event', 'import_fkf_fixtures']
     
     fieldsets = (
         ('Basic Information', {
@@ -135,6 +136,22 @@ class EventAdmin(admin.ModelAdmin):
             event.status = 'draft'
             event.view_count = 0
             event.save()
+
+    @admin.action(description='Import FKF fixtures (creates sports events)')
+    def import_fkf_fixtures(self, request, queryset):
+        try:
+            call_command('import_fkf_fixtures')
+            self.message_user(
+                request,
+                'Successfully imported FKF fixtures!',
+                messages.SUCCESS
+            )
+        except Exception as e:
+            self.message_user(
+                request,
+                f'Error importing FKF fixtures: {str(e)}',
+                messages.ERROR
+            )
 
 
 @admin.register(TicketTier)

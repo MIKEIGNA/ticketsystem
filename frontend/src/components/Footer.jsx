@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Ticket, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
+import { Ticket, Mail, Phone, MapPin, Share2 } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -26,10 +26,10 @@ const Footer = () => {
   };
 
   const socialLinks = [
-    { name: 'Facebook', icon: Facebook, href: '#' },
-    { name: 'Twitter', icon: Twitter, href: '#' },
-    { name: 'Instagram', icon: Instagram, href: '#' },
-    { name: 'Youtube', icon: Youtube, href: '#' },
+    { name: 'Facebook', icon: Share2, href: '#' },
+    { name: 'Twitter', icon: Share2, href: '#' },
+    { name: 'Instagram', icon: Share2, href: '#' },
+    { name: 'Youtube', icon: Share2, href: '#' },
   ];
 
   return (
