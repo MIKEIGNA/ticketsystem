@@ -10,7 +10,11 @@ import requests
 from django.template.loader import render_to_string
 from events.kpl_team_logos import enrich_match_data_logos
 from PIL import Image
-from weasyprint import HTML
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 
 def _qr_base64(data: str, fill_color: str, back_color: str = "white") -> str:
@@ -133,25 +137,88 @@ def generate_ticket_pdf(ticket):
     fill = "#000000" if use_sports else "#1e40af"
     qr_base64 = _qr_base64(payload, fill_color=fill)
 
-    context = {
-        "ticket": ticket,
-        "booking": booking,
-        "event": event,
-        "tier": tier,
-        "qr_base64": qr_base64,
-        "venue": event.venue,
-        "attendee_name": ticket.attendee_name or booking.contact_name,
-        "attendee_email": ticket.attendee_email or booking.contact_email,
-        "attendee_phone": ticket.attendee_phone or booking.contact_phone,
-    }
-
-    if use_sports:
-        context.update(_sports_match_context(event, tier, ticket, qr_base64))
-        template_name = "bookings/ticket_template_sports.html"
-    else:
-        template_name = "bookings/ticket_template.html"
-
-    html_string = render_to_string(template_name, context)
     result = BytesIO()
-    HTML(string=html_string).write_pdf(result)
+    doc = SimpleDocTemplate(result, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+    story = []
+    styles = getSampleStyleSheet()
+
+    # Custom styles
+    title_style = ParagraphStyle(
+        "CustomTitle",
+        parent=styles["Heading1"],
+        fontSize=24,
+        textColor="#1e40af",
+        alignment=TA_CENTER,
+        spaceAfter=20,
+    )
+    normal_style = ParagraphStyle(
+        "CustomNormal",
+        parent=styles["Normal"],
+        fontSize=12,
+        spaceAfter=12,
+    )
+    label_style = ParagraphStyle(
+        "CustomLabel",
+        parent=styles["Normal"],
+        fontSize=10,
+        textColor="#666666",
+    )
+
+    # Event title
+    story.append(Paragraph(event.title, title_style))
+    story.append(Spacer(1, 0.2 * inch))
+
+    # Date and time
+    date_str = event.start_date.strftime("%B %d, %Y") if event.start_date else "Date TBA"
+    time_str = event.start_time.strftime("%I:%M %p") if event.start_time else "Time TBA"
+    story.append(Paragraph(f"<b>Date:</b> {date_str}  <b>Time:</b> {time_str}", normal_style))
+
+    # Venue
+    venue_name = event.venue.name if event.venue else "Venue TBA"
+    story.append(Paragraph(f"<b>Venue:</b> {venue_name}", normal_style))
+    story.append(Spacer(1, 0.2 * inch))
+
+    # Ticket tier
+    story.append(Paragraph(f"<b>Ticket Type:</b> {tier.name}", normal_style))
+
+    # Attendee info
+    attendee = ticket.attendee_name or booking.contact_name or "N/A"
+    story.append(Paragraph(f"<b>Attendee:</b> {attendee}", normal_style))
+    story.append(Spacer(1, 0.2 * inch))
+
+    # Sports-specific info
+    if use_sports:
+        md = event.match_data if isinstance(event.match_data, dict) else {}
+        enriched = enrich_match_data_logos(dict(md))
+        home_team = enriched.get("home_team", "")
+        away_team = enriched.get("away_team", "")
+        stadium = enriched.get("stadium", "") or (event.venue.name if event.venue else "Venue TBA")
+
+        if home_team and away_team:
+            story.append(Paragraph(f"<b>Match:</b> {home_team} vs {away_team}", normal_style))
+        if stadium:
+            story.append(Paragraph(f"<b>Stadium:</b> {stadium}", normal_style))
+        story.append(Spacer(1, 0.2 * inch))
+
+    # QR Code
+    qr_data = base64.b64decode(qr_base64)
+    qr_image = BytesIO(qr_data)
+    qr_img = Image(qr_image, width=1.5 * inch, height=1.5 * inch)
+    qr_img.hAlign = "CENTER"
+    story.append(qr_img)
+    story.append(Spacer(1, 0.2 * inch))
+
+    # Ticket number
+    story.append(Paragraph(f"<b>Ticket #:</b> {ticket.ticket_number}", label_style))
+
+    # Divider
+    story.append(Spacer(1, 0.3 * inch))
+    story.append(Paragraph("=" * 50, ParagraphStyle("Divider", alignment=TA_CENTER, textColor="#cccccc")))
+    story.append(Spacer(1, 0.2 * inch))
+
+    # Footer
+    story.append(Paragraph("Present this QR code at the venue for entry.", label_style))
+    story.append(Paragraph("This ticket is non-transferable.", label_style))
+
+    doc.build(story)
     return result.getvalue()

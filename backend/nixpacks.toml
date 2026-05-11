@@ -1,3 +1,0 @@
-[phases.setup]
-nixPkgs = ["cairo", "pango", "pkg-config", "gcc", "glib", "gobject-introspection", "libffi", "python312"]
-aptPkgs = ["libglib2.0-0", "libgobject-2.0-0", "libgirepository-1.0-1", "libcairo2", "libpango-1.0-0", "libpangocairo-1.0-0"]
