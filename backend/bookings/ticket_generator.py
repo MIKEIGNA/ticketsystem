@@ -10,7 +10,7 @@ import requests
 from django.template.loader import render_to_string
 from events.kpl_team_logos import enrich_match_data_logos
 from PIL import Image
-from xhtml2pdf import pisa
+from weasyprint import HTML
 
 
 def _qr_base64(data: str, fill_color: str, back_color: str = "white") -> str:
@@ -153,7 +153,5 @@ def generate_ticket_pdf(ticket):
 
     html_string = render_to_string(template_name, context)
     result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html_string.encode("UTF-8")), result)
-    if pdf.err:
-        raise Exception(f"PDF generation error: {pdf.err}")
+    HTML(string=html_string).write_pdf(result)
     return result.getvalue()
