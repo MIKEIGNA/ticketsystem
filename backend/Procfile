@@ -1,1 +1,2 @@
-web: gunicorn ticketsystem.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120
+release: DJANGO_SETTINGS_MODULE=ticketsystem.production_settings python manage.py migrate --noinput
+web: DJANGO_SETTINGS_MODULE=ticketsystem.production_settings gunicorn ticketsystem.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120
