@@ -17,3 +17,4 @@ dj-database-url>=2.2
 python-dotenv>=1.0
 django-extensions>=3.2
 reportlab>=4.2
+django-jazzmin>=3.0

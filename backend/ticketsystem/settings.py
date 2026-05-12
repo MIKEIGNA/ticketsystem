@@ -12,6 +12,121 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ─── Jazzmin Admin Theme ──────────────────────────────────────────────────────
+JAZZMIN_SETTINGS = {
+    # Title on the login screen and browser tab
+    "site_title": "BrightPass Admin",
+    "site_header": "BrightPass",
+    "site_brand": "BrightPass",
+    "site_logo": None,
+    "login_logo": None,
+    "site_icon": None,
+    "welcome_sign": "Welcome to BrightPass Admin",
+    "copyright": "BrightPass Ltd",
+
+    # Top menu links
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Site", "url": "/api/health/", "new_window": True},
+    ],
+
+    # User menu links (top right)
+    "usermenu_links": [
+        {"name": "Support", "url": "https://github.com/", "new_window": True},
+    ],
+
+    # Sidebar navigation
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+
+    # Custom icons for apps/models (Font Awesome 5 free)
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "accounts.user": "fas fa-user-circle",
+        "accounts.userprofile": "fas fa-id-card",
+        "events.event": "fas fa-calendar-alt",
+        "events.category": "fas fa-tags",
+        "events.venue": "fas fa-map-marker-alt",
+        "events.tickettier": "fas fa-layer-group",
+        "events.kplteam": "fas fa-shield-alt",
+        "bookings.booking": "fas fa-ticket-alt",
+        "bookings.ticket": "fas fa-qrcode",
+        "payments.payment": "fas fa-money-bill-wave",
+        "payments.refund": "fas fa-undo",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+
+    # Sidebar ordering — controls which apps/models appear and in what order
+    "order_with_respect_to": [
+        "events",
+        "events.event",
+        "events.kplteam",
+        "events.tickettier",
+        "events.category",
+        "events.venue",
+        "bookings",
+        "bookings.booking",
+        "bookings.ticket",
+        "payments",
+        "payments.payment",
+        "payments.refund",
+        "accounts",
+        "accounts.user",
+        "accounts.userprofile",
+        "auth",
+    ],
+
+    # UI tweaks
+    "related_modal_active": True,
+    "custom_css": None,
+    "custom_js": None,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {
+        "auth.user": "collapsible",
+        "auth.group": "vertical_tabs",
+    },
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-success",
+    "accent": "accent-teal",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-success",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "default",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
+}
+# ─────────────────────────────────────────────────────────────────────────────
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -60,6 +175,7 @@ CACHES = {
 # Application definition
 
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

@@ -5,7 +5,7 @@
     "buildCommand": "pip install -r requirements.txt && DJANGO_SETTINGS_MODULE=ticketsystem.production_settings python manage.py collectstatic --noinput"
   },
   "deploy": {
-    "preDeployCommand": "DJANGO_SETTINGS_MODULE=ticketsystem.production_settings python manage.py migrate --noinput && python manage.py create_superuser_if_not_exists",
+    "preDeployCommand": "DJANGO_SETTINGS_MODULE=ticketsystem.production_settings python manage.py migrate --noinput && python manage.py create_superuser_if_not_exists && python manage.py seed_kpl_data",
     "startCommand": "DJANGO_SETTINGS_MODULE=ticketsystem.production_settings gunicorn ticketsystem.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120",
     "healthcheckPath": "/api/health/",
     "healthcheckTimeout": 300,

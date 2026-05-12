@@ -4,6 +4,31 @@ from django.core.validators import MinValueValidator
 from django.utils import timezone
 
 
+class KPLTeam(models.Model):
+    """Kenya Premier League team — used as a lookup when creating matches manually."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, unique=True)
+    short_name = models.CharField(max_length=20, blank=True, help_text="e.g. GOR, AFC")
+    logo_url = models.URLField(blank=True, help_text="TheSportsDB badge URL")
+    primary_color = models.CharField(max_length=7, default='#000000', help_text="Hex color")
+    secondary_color = models.CharField(max_length=7, default='#FFFFFF', help_text="Hex color")
+    home_stadium = models.CharField(max_length=200, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    founded = models.PositiveIntegerField(blank=True, null=True)
+    thesportsdb_id = models.CharField(max_length=20, blank=True, db_index=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'KPL Team'
+        verbose_name_plural = 'KPL Teams'
+
+    def __str__(self):
+        return self.name
+
+
 class Category(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, unique=True)

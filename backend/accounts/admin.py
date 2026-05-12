@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.utils.html import format_html
+from django.utils.html import format_html, mark_safe
 from .models import User, UserProfile
 
 
@@ -50,14 +50,14 @@ class UserAdmin(BaseUserAdmin):
     
     def organizer_badge(self, obj):
         if obj.is_organizer:
-            return format_html('<span style="background: #8b5cf6; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px;">ORGANIZER</span>')
+            return mark_safe('<span style="background: #8b5cf6; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px;">ORGANIZER</span>')
         return ''
     organizer_badge.short_description = 'Organizer'
     
     def verified_badge(self, obj):
         if obj.is_verified:
-            return format_html('<span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px;">✓ VERIFIED</span>')
-        return format_html('<span style="background: #fbbf24; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px;">PENDING</span>')
+            return mark_safe('<span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px;">✓ VERIFIED</span>')
+        return mark_safe('<span style="background: #fbbf24; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px;">PENDING</span>')
     verified_badge.short_description = 'Verified'
     
     @admin.action(description='Mark selected users as verified')

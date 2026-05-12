@@ -1,0 +1,23 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{{ sync_incremental_url }}" class="btn btn-sm btn-success"
+       onclick="return confirm('Run incremental KPL sync from TheSportsDB? This may take a few seconds.')">
+      🔄 Sync KPL (Incremental)
+    </a>
+  </li>
+  <li>
+    <a href="{{ sync_full_url }}" class="btn btn-sm btn-info"
+       onclick="return confirm('Run FULL season KPL sync? This fetches all fixtures and may take longer.')">
+      🔄 Sync KPL (Full Season)
+    </a>
+  </li>
+  <li>
+    <a href="{{ import_fkf_url }}" class="btn btn-sm btn-warning"
+       onclick="return confirm('Import hardcoded FKF fixtures?')">
+      ⚽ Import FKF Fixtures
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}
