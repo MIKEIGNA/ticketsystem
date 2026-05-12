@@ -13,7 +13,7 @@ const Events = () => {
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
     category_slug: searchParams.get('category_slug') || '',
-    filter: searchParams.get('filter') || 'upcoming',
+    filter: searchParams.get('filter') || '',
     min_price: searchParams.get('min_price') || '',
     max_price: searchParams.get('max_price') || '',
     city: searchParams.get('city') || '',
@@ -59,7 +59,7 @@ const Events = () => {
     setFilters({
       search: '',
       category_slug: '',
-      filter: 'upcoming',
+      filter: '',
       min_price: '',
       max_price: '',
       city: '',
@@ -130,6 +130,7 @@ const Events = () => {
               onChange={(e) => updateFilter('filter', e.target.value)}
               className="lg:w-40 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500"
             >
+              <option value="">All Events</option>
               <option value="upcoming">Upcoming</option>
               <option value="today">Today</option>
               <option value="this_week">This Week</option>
