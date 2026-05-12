@@ -8,7 +8,7 @@
     }
   },
   "deploy": {
-    "startCommand": "gunicorn ticketsystem.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120",
+    "startCommand": "DJANGO_SETTINGS_MODULE=ticketsystem.production_settings gunicorn ticketsystem.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120",
     "healthcheckPath": "/api/health/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
