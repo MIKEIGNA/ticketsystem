@@ -16,18 +16,25 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
     raise ValueError('DJANGO_SECRET_KEY environment variable is required')
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
-if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()] or ['*']
 
 # CORS settings for production
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
-if not CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS = ['https://brightpassticket.web.app']
+def _parse_origins(env_val, defaults):
+    """Parse comma-separated origins, adding https:// if scheme is missing."""
+    raw = [o.strip() for o in env_val.split(',') if o.strip()]
+    if not raw:
+        return defaults
+    return [o if '://' in o else f'https://{o}' for o in raw]
 
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
-if not CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS = ['https://brightpassticket.web.app', 'https://backendticketsystem-production.up.railway.app']
+CORS_ALLOWED_ORIGINS = _parse_origins(
+    os.environ.get('CORS_ALLOWED_ORIGINS', ''),
+    ['https://brightpassticket.web.app'],
+)
+
+CSRF_TRUSTED_ORIGINS = _parse_origins(
+    os.environ.get('CSRF_TRUSTED_ORIGINS', ''),
+    ['https://brightpassticket.web.app', 'https://backendticketsystem-production.up.railway.app'],
+)
 
 # Database - Railway provides DATABASE_URL
 DATABASES = {
