@@ -299,11 +299,11 @@ class EventAdmin(admin.ModelAdmin):
         except Exception as exc:
             self.message_user(request, f"Sync failed: {exc}", messages.ERROR)
 
-    @admin.action(description="⚽ Import hardcoded FKF fixtures")
+    @admin.action(description="⚽ Import hardcoded FKF fixtures (clears old, creates upcoming)")
     def import_fkf_fixtures_action(self, request, queryset):
         try:
-            call_command("import_fkf_fixtures")
-            self.message_user(request, "✓ FKF fixtures imported.", messages.SUCCESS)
+            call_command("import_fkf_fixtures", clear_existing=True)
+            self.message_user(request, "✓ FKF fixtures imported with upcoming dates.", messages.SUCCESS)
         except Exception as exc:
             self.message_user(request, f"Import failed: {exc}", messages.ERROR)
 
@@ -358,8 +358,8 @@ class EventAdmin(admin.ModelAdmin):
 
     def _import_fkf_view(self, request):
         try:
-            call_command("import_fkf_fixtures")
-            self.message_user(request, "✓ FKF fixtures imported.", messages.SUCCESS)
+            call_command("import_fkf_fixtures", clear_existing=True)
+            self.message_user(request, "✓ FKF fixtures imported with upcoming dates.", messages.SUCCESS)
         except Exception as exc:
             self.message_user(request, f"Import failed: {exc}", messages.ERROR)
         return HttpResponseRedirect(reverse("admin:events_event_changelist"))
