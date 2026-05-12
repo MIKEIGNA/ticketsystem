@@ -8,6 +8,7 @@ Usage:
 
 from datetime import datetime, timedelta, date
 from django.utils import timezone
+from django.utils.text import slugify
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from events.models import Category, Venue, Event, TicketTier
@@ -266,11 +267,7 @@ class Command(BaseCommand):
         home_team = fixture["home_team"]
         away_team = fixture["away_team"]
         title = f"{home_team} vs {away_team}"
-        slug = (
-            f"{home_team.lower().replace(' ', '-').replace(chr(39), '')}"
-            f"-vs-{away_team.lower().replace(' ', '-')}"
-            f"-{fixture['date']}"
-        )
+        slug = slugify(f"{home_team}-vs-{away_team}-{fixture['date']}")[:200]
 
         if Event.objects.filter(slug=slug).exists():
             self.stdout.write(f"  Already exists: {title}")

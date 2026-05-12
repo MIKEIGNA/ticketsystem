@@ -404,6 +404,6 @@ class TicketTierAdmin(admin.ModelAdmin):
 
     def sales_status(self, obj):
         if obj.is_on_sale:
-            return format_html('<span style="color:#10b981;font-weight:bold;">On Sale</span>')
-        return format_html('<span style="color:#6b7280;">Not Available</span>')
+            return mark_safe('<span style="color:#10b981;font-weight:bold;">On Sale</span>')
+        return mark_safe('<span style="color:#6b7280;">Not Available</span>')
     sales_status.short_description = "Sales"

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.utils.html import format_html
+from django.utils.html import format_html, mark_safe
 from .models import Booking, Ticket
 
 
@@ -29,10 +29,10 @@ class BookingAdmin(admin.ModelAdmin):
             'fields': ('contact_name', 'contact_email', 'contact_phone')
         }),
         ('Financial', {
-            'fields': ('total_amount', 'currency', 'subtotal', 'discount_amount', 'tax_amount')
+            'fields': ('total_amount', 'ticket_count')
         }),
         ('Additional', {
-            'fields': ('special_requests', 'notes')
+            'fields': ('special_requests',)
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'expires_at'),
@@ -143,8 +143,8 @@ class TicketAdmin(admin.ModelAdmin):
     
     def checked_in_status(self, obj):
         if obj.checked_in:
-            return format_html('<span style="color: #10b981;">✓ Yes</span>')
-        return format_html('<span style="color: #6b7280;">○ No</span>')
+            return mark_safe('<span style="color: #10b981;">✓ Yes</span>')
+        return mark_safe('<span style="color: #6b7280;">○ No</span>')
     checked_in_status.short_description = 'Checked In'
     
     @admin.action(description='Mark selected tickets as valid')
