@@ -14,6 +14,9 @@ export const eventService = {
   createEvent: (data) => api.post('/events/', data),
   updateEvent: (slug, data) => api.patch(`/events/${slug}/`, data),
 
+  // Match scores (polls TheSportsDB, cached 60s server-side)
+  getMatchScore: (slug) => api.get(`/events/${slug}/scores/`),
+
   // Venues
   getVenues: () => api.get('/events/venues/'),
   getVenue: (id) => api.get(`/events/venues/${id}/`),

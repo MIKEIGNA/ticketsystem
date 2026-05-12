@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import '../styles/clubColors.css';
+import MatchScore from '../components/MatchScore';
 
 const EventDetail = () => {
   const { slug } = useParams();
@@ -200,82 +201,26 @@ const EventDetail = () => {
               </div>
             </div>
 
-            {/* Match Info - Only for sports events with match_data */}
+            {/* Match Score - Only for sports events with match_data */}
             {event.match_data?.home_team && event.match_data?.away_team && (
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-900">Match Info</h2>
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-xl font-bold text-gray-900">Match Score</h2>
                   <div className="flex gap-2">
-                    {/* FKF Badge */}
                     <span className="fkf-badge">FKF</span>
-                    {/* SportPesa Badge */}
                     <span className="sportpesa-badge">SportPesa</span>
-                    {/* Category Badge */}
-                    <span className={`category-${event.match_data.category?.toLowerCase()}-badge`}>
-                      {event.match_data.category} Category
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center gap-4 py-4">
-                  {/* Home Team */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden mb-2">
-                      {event.match_data.home_team_logo ? (
-                        <img
-                          src={event.match_data.home_team_logo}
-                          alt={event.match_data.home_team}
-                          className="w-16 h-16 object-contain"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <div className="text-2xl font-bold text-gray-400">
-                          {event.match_data.home_team.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    <p className="font-semibold text-gray-900 text-center">{event.match_data.home_team}</p>
-                    <p className="text-sm text-gray-500">Home</p>
-                  </div>
-
-                  {/* VS */}
-                  <div className="flex flex-col items-center px-4">
-                    <div className="text-2xl font-bold text-gray-400">VS</div>
-                    <p className="text-sm text-gray-500 mt-1">{event.match_data.category} Category</p>
-                  </div>
-
-                  {/* Away Team */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden mb-2">
-                      {event.match_data.away_team_logo ? (
-                        <img
-                          src={event.match_data.away_team_logo}
-                          alt={event.match_data.away_team}
-                          className="w-16 h-16 object-contain"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <div className="text-2xl font-bold text-gray-400">
-                          {event.match_data.away_team.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    <p className="font-semibold text-gray-900 text-center">{event.match_data.away_team}</p>
-                    <p className="text-sm text-gray-500">Away</p>
-                  </div>
-                </div>
-
-                {/* Stadium/Venue */}
-                {(event.match_data?.stadium || event.venue?.name) && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <MapPin className="w-5 h-5 text-secondary-600" />
-                      <span className="font-semibold text-gray-900">
-                        {event.match_data?.stadium || event.venue?.name}
+                    {event.match_data.category && (
+                      <span className={`category-${event.match_data.category?.toLowerCase()}-badge`}>
+                        {event.match_data.category} Category
                       </span>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">Venue</p>
+                    )}
                   </div>
-                )}
+                </div>
+                <MatchScore
+                  slug={event.slug}
+                  matchData={event.match_data}
+                  startDatetime={event.start_datetime}
+                />
               </div>
             )}
 

@@ -7,6 +7,7 @@ from django_filters import CharFilter
 from django.utils import timezone
 from django.db.models import Q, Min
 from django.core.management import call_command
+from django.core.cache import cache
 
 from .models import Category, Venue, Event, TicketTier
 from .serializers import (
@@ -15,16 +16,16 @@ from .serializers import (
     EventSerializer, EventListSerializer, EventCreateSerializer,
     TicketTierSerializer, TicketTierCreateSerializer
 )
+from .thesportsdb_v2_client import fetch_event_by_id, parse_score_from_event
 
 
 class EventFilter(FilterSet):
     category_slug = CharFilter(field_name='category__slug')
     city = CharFilter(field_name='venue__city')
-    date = CharFilter(field_name='start_datetime', lookup_expr='date')
-    
+
     class Meta:
         model = Event
-        fields = ['category', 'status', 'featured', 'category_slug', 'city', 'date']
+        fields = ['category', 'status', 'featured', 'category_slug', 'city']
 
 
 # ==================== CATEGORY VIEWS ====================
@@ -78,7 +79,7 @@ class EventListView(generics.ListCreateAPIView):
     search_fields = ['title', 'subtitle', 'description', 'tags']
     filterset_class = EventFilter
     ordering_fields = ['start_datetime', 'created_at', 'view_count']
-    ordering = ['-start_datetime']
+    ordering = ['start_datetime']  # soonest first by default
 
     def get_queryset(self):
         queryset = Event.objects.filter(is_public=True, status='published')
@@ -263,7 +264,7 @@ class EventSearchView(APIView):
 
 class ImportFixturesView(APIView):
     """APIView to trigger import_fkf_fixtures management command"""
-    permission_classes = [permissions.AllowAny]  # Allow for testing, can restrict later
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         try:
@@ -277,4 +278,84 @@ class ImportFixturesView(APIView):
                 {'error': f'Failed to import fixtures: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+# ==================== MATCH SCORE VIEW ====================
+
+class MatchScoreView(APIView):
+    """
+    GET /api/events/<slug>/scores/
+
+    Returns the latest score for a football match event.
+    - Checks TheSportsDB v2 using the idEvent stored in match_data
+    - Caches the result for 60 seconds to avoid hammering the API
+    - Also writes the score back to match_data so it persists
+    """
+    permission_classes = [permissions.AllowAny]
+    CACHE_TTL = 60  # seconds
+
+    def get(self, request, slug):
+        try:
+            event = Event.objects.get(slug=slug, is_public=True)
+        except Event.DoesNotExist:
+            return Response({'error': 'Event not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        match_data = event.match_data or {}
+        id_event = match_data.get('idEvent') or match_data.get('match_id', '')
+
+        # Build base response from what we already have stored
+        stored_score = {
+            'home_team': match_data.get('home_team', ''),
+            'away_team': match_data.get('away_team', ''),
+            'home_team_logo': match_data.get('home_team_logo', ''),
+            'away_team_logo': match_data.get('away_team_logo', ''),
+            'home_score': match_data.get('intHomeScore') or match_data.get('home_score'),
+            'away_score': match_data.get('intAwayScore') or match_data.get('away_score'),
+            'status': match_data.get('strStatus', 'scheduled'),
+            'status_detail': match_data.get('strStatus', ''),
+            'progress': match_data.get('strProgress', ''),
+            'source': 'stored',
+            'event_id': str(event.id),
+            'slug': event.slug,
+            'start_datetime': event.start_datetime.isoformat(),
+        }
+
+        # Only hit the API if we have a TheSportsDB event ID (v2 synced events)
+        if not id_event or not str(id_event).startswith(('v2-', '')) or not str(id_event).replace('v2-', '').isdigit():
+            # No TheSportsDB ID — return stored data
+            return Response({**stored_score, 'source': 'stored', 'live': False})
+
+        # Strip the "v2-" prefix if present
+        tsdb_id = str(id_event).replace('v2-', '')
+        cache_key = f'match_score:{tsdb_id}'
+        cached = cache.get(cache_key)
+        if cached:
+            return Response({**stored_score, **cached, 'source': 'cache', 'live': True})
+
+        # Fetch from TheSportsDB
+        try:
+            row = fetch_event_by_id(tsdb_id)
+        except Exception:
+            row = None
+
+        if not row:
+            return Response({**stored_score, 'source': 'stored', 'live': False})
+
+        score_data = parse_score_from_event(row)
+        result = {
+            **stored_score,
+            **score_data,
+            'source': 'live',
+            'live': score_data['status'] in ('live', 'finished'),
+        }
+
+        # Cache the live result
+        cache.set(cache_key, score_data, self.CACHE_TTL)
+
+        # Persist score back to match_data if the match is finished
+        if score_data['status'] == 'finished' and score_data['home_score'] is not None:
+            updated_md = {**match_data, **score_data}
+            Event.objects.filter(pk=event.pk).update(match_data=updated_md)
+
+        return Response(result)
 

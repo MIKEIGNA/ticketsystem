@@ -73,3 +73,46 @@ def fetch_tv_day(date_yyyy_mm_dd: str) -> list[dict[str, Any]]:
     if not rows:
         return []
     return list(rows)
+
+
+def fetch_event_by_id(event_id: str) -> dict[str, Any] | None:
+    """GET /lookupevent.php?id=:id — single event with live/final score."""
+    try:
+        payload = _get(f"lookupevent.php?id={event_id}")
+        events = payload.get("events")
+        if not events:
+            return None
+        return events[0] if isinstance(events, list) else events
+    except Exception as exc:
+        logger.warning("TheSportsDB lookupevent %s failed: %s", event_id, exc)
+        return None
+
+
+def parse_score_from_event(row: dict[str, Any]) -> dict[str, Any]:
+    """Extract score + status fields from a TheSportsDB event row."""
+    home_score = row.get("intHomeScore")
+    away_score = row.get("intAwayScore")
+    status = (row.get("strStatus") or "").strip()
+    progress = (row.get("strProgress") or "").strip()
+    postponed = (row.get("strPostponed") or "").lower() == "yes"
+
+    # Normalise status
+    if postponed:
+        normalised = "postponed"
+    elif "finished" in status.lower() or "ft" in status.lower():
+        normalised = "finished"
+    elif status.lower() in ("live", "in progress", "1h", "2h", "ht"):
+        normalised = "live"
+    elif home_score is not None and away_score is not None:
+        normalised = "finished"
+    else:
+        normalised = "scheduled"
+
+    return {
+        "home_score": int(home_score) if home_score is not None else None,
+        "away_score": int(away_score) if away_score is not None else None,
+        "status": normalised,
+        "status_detail": status,
+        "progress": progress,
+        "postponed": postponed,
+    }
