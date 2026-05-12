@@ -76,12 +76,8 @@ const Register = () => {
   };
 
   const formatPhoneNumber = (value) => {
-    // Format to 254XXXXXXXXX
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.startsWith('0') && cleaned.length === 10) {
-      return '254' + cleaned.substring(1);
-    }
-    return cleaned;
+    // Keep as-is — backend normalizes 07XXXXXXXX / 01XXXXXXXX to 254XXXXXXXXX
+    return value.replace(/[^\d+]/g, '');
   };
 
   const handlePhoneChange = (e) => {
@@ -208,11 +204,11 @@ const Register = () => {
                       onChange={handlePhoneChange}
                       required
                       className="input pl-12"
-                      placeholder="254712345678"
+                      placeholder="0712345678"
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Format: 254XXXXXXXXX (for M-Pesa payments)
+                    Format: 07XXXXXXXX or 01XXXXXXXX
                   </p>
                 </div>
 

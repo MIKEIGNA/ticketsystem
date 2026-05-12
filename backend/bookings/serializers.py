@@ -64,6 +64,10 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError("At least one ticket is required")
         return value
+
+    def validate_contact_phone(self, value):
+        from accounts.models import normalize_phone
+        return normalize_phone(value) if value else value
     
     def create(self, validated_data):
         from events.models import Event, TicketTier
@@ -107,7 +111,13 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         for ticket_data in tickets_data:
             tier_id = ticket_data.pop('ticket_tier_id')
             tier = TicketTier.objects.get(id=tier_id)
-            
+
+            # Normalize attendee phone
+            from accounts.models import normalize_phone
+            phone = ticket_data.get('attendee_phone') or ''
+            if phone:
+                ticket_data['attendee_phone'] = normalize_phone(phone)
+
             # Update available quantity
             tier.available_quantity -= 1
             tier.save()

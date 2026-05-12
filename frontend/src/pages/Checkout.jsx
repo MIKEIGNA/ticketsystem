@@ -84,8 +84,27 @@ const Checkout = () => {
       // SKIP PAYMENT FOR TESTING: Go directly to success
       setStep('success');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create booking');
-    } finally {
+      const data = err.response?.data;
+      // Extract the most useful error message from DRF responses
+      let msg = 'Failed to create booking';
+      if (data) {
+        if (typeof data === 'string') {
+          msg = data;
+        } else if (data.detail) {
+          msg = data.detail;
+        } else if (data.message) {
+          msg = data.message;
+        } else if (data.non_field_errors) {
+          msg = Array.isArray(data.non_field_errors) ? data.non_field_errors.join(', ') : data.non_field_errors;
+        } else {
+          // Flatten field-level errors
+          const fieldErrors = Object.entries(data)
+            .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : errs}`)
+            .join(' | ');
+          if (fieldErrors) msg = fieldErrors;
+        }
+      }
+      setError(msg);    } finally {
       setLoading(false);
     }
   };
@@ -289,7 +308,7 @@ const Checkout = () => {
                                 value={ticket.attendee_phone}
                                 onChange={(e) => updateTicketDetail(index, 'attendee_phone', e.target.value)}
                                 className="input text-sm"
-                                placeholder="254XXXXXXXXX"
+                                placeholder="0712345678"
                                 required
                               />
                             </div>
@@ -340,7 +359,7 @@ const Checkout = () => {
                       value={paymentPhone}
                       onChange={(e) => setPaymentPhone(e.target.value)}
                       className="input"
-                      placeholder="254712345678"
+                      placeholder="0712345678"
                       required
                     />
                     <p className="text-xs text-gray-500 mt-1">
@@ -373,7 +392,7 @@ const Checkout = () => {
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">Processing Payment</h2>
                 <p className="text-gray-600">
-                  Please check your phone (254...) and enter your M-Pesa PIN to complete the payment.
+                  Please check your phone and enter your M-Pesa PIN to complete the payment.
                 </p>
               </div>
             )}

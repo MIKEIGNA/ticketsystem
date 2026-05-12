@@ -27,12 +27,13 @@ class PaymentCreateSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=13)
     
     def validate_phone_number(self, value):
-        # Validate Kenyan phone number format
-        if not value.startswith('254') or len(value) != 12 or not value.isdigit():
+        from accounts.models import normalize_phone
+        normalized = normalize_phone(value)
+        if not (normalized.startswith('254') and len(normalized) == 12 and normalized.isdigit()):
             raise serializers.ValidationError(
-                "Phone number must be in format 254XXXXXXXXX (12 digits)"
+                "Enter a valid Kenyan phone number: 07XXXXXXXX, 01XXXXXXXX, or 254XXXXXXXXX"
             )
-        return value
+        return normalized
 
 
 class MpesaCallbackSerializer(serializers.Serializer):

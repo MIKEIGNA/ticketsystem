@@ -120,11 +120,13 @@ class Ticket(models.Model):
         if not self.ticket_number:
             self.ticket_number = self.generate_ticket_number()
         if not self.qr_code_data:
-            self.qr_code_data = f"TICKET:{self.ticket_number}:{self.booking.event.id}"
-        self.security_code = build_security_code(self.qr_code_data)
+            self.qr_code_data = f"TICKET:{self.ticket_number}:{self.booking.event_id}"
+        # Only recompute security_code if qr_code_data changed or it's empty
+        if self.qr_code_data and not self.security_code:
+            self.security_code = build_security_code(self.qr_code_data)
         super().save(*args, **kwargs)
         
-        # Generate QR code after save
+        # Generate QR code after save (only if not already generated)
         if not self.qr_code:
             self.generate_qr_code()
 

@@ -32,6 +32,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'password', 'password_confirm', 
                   'first_name', 'last_name', 'phone_number']
     
+    def validate_phone_number(self, value):
+        from accounts.models import normalize_phone
+        return normalize_phone(value) if value else value
+
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError("Passwords don't match")
@@ -55,6 +59,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         model = User
         fields = ['first_name', 'last_name', 'email', 'phone_number', 
                   'profile_picture', 'profile']
+
+    def validate_phone_number(self, value):
+        from accounts.models import normalize_phone
+        return normalize_phone(value) if value else value
     
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', None)

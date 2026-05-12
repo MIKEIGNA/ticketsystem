@@ -67,8 +67,17 @@ class BookingListView(generics.ListCreateAPIView):
         # Set user if authenticated, otherwise None (guest checkout)
         user = request.user if request.user.is_authenticated else None
         
-        # Create booking
-        booking = serializer.save(user=user)
+        try:
+            booking = serializer.save(user=user)
+        except Exception as exc:
+            import traceback
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error("Booking creation failed: %s\n%s", exc, traceback.format_exc())
+            return Response(
+                {'detail': str(exc), 'type': type(exc).__name__},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         # Return full booking with tickets using BookingSerializer
         output_serializer = BookingSerializer(booking)
